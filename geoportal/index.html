@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SICOA - Centro de Monitoreo Riobamba</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="top-header">
+            <div class="header-title">
+                <span class="status-indicator live"></span>
+                <div>
+                    <h1>SICOA - Centro de Monitoreo</h1>
+                    <p>Riobamba | Recepción de Alertas en Tiempo Real</p>
+                </div>
+            </div>
+            <div class="connection-status offline" id="connectionBadge">
+                Sin conexión
+            </div>
+        </header>
+
+        <!-- Sidebar (Filtros) -->
+        <aside class="sidebar">
+            <div class="filter-section">
+                <h2><i class="icon-filter"></i> FILTROS</h2>
+                
+                <div class="filter-group">
+                    <label>Género de la Víctima</label>
+                    <select id="filterGender">
+                        <option value="Todos">Todos</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Fecha</label>
+                    <input type="date" id="filterDate">
+                </div>
+
+                <div class="filter-group">
+                    <label>Hora</label>
+                    <input type="time" id="filterTime">
+                </div>
+
+                <div class="filter-group">
+                    <label>Edad (Rango)</label>
+                    <div class="range-inputs">
+                        <input type="number" id="filterAgeMin" placeholder="Min" min="0">
+                        <input type="number" id="filterAgeMax" placeholder="Max" min="0">
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="btnApplyFilters">Aplicar Filtros</button>
+                <button class="btn-secondary" id="btnClearFilters">Limpiar Todo</button>
+            </div>
+
+            <div class="events-counter">
+                <h3>EVENTOS ACTIVOS</h3>
+                <div class="counter-number" id="activeEvents">0</div>
+            </div>
+        </aside>
+
+        <!-- Mapa -->
+        <main class="map-container">
+            <div id="map"></div>
+        </main>
+
+        <!-- Tabla de Logs -->
+        <footer class="log-panel">
+            <div class="log-header">
+                <h2><i class="icon-list"></i> LOG DE EMERGENCIAS EN VIVO</h2>
+                <button class="btn-outline" id="btnForceUpdate">Forzar Actualización</button>
+            </div>
+            <div class="table-container">
+                <table id="logTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>FECHA Y HORA</th>
+                            <th>CIUDADANO (NOMBRES)</th>
+                            <th>GÉNERO / EDAD</th>
+                            <th>TIPO</th>
+                            <th>ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody">
+                        <!-- Las filas se insertarán dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
