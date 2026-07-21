@@ -137,7 +137,7 @@ async def websocket_alertas(websocket: WebSocket):
             datos = await run_in_threadpool(consultar_alertas)
             await websocket.send_json(datos)
             await asyncio.sleep(1)
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect, RuntimeError):
         pass
 
 from fastapi.staticfiles import StaticFiles
