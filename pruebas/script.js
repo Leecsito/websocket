@@ -30,6 +30,16 @@ function initMap() {
         maxZoom: 19
     }).addTo(pickMap);
 
+    // ── Capa WMS de GeoServer ───────────────────────────
+    var urlGeoServerWMS = 'https://michael-photography-savings-commonly.trycloudflare.com/geoserver/seguridad_riobamba/wms';
+    L.tileLayer.wms(urlGeoServerWMS, {
+        layers: 'seguridad_riobamba:geoalerta_capas',
+        format: 'image/png',
+        transparent: true,
+        version: '1.1.0',
+        zIndex: 1000
+    }).addTo(pickMap);
+
     pickMap.on('click', function(e) {
         var lat = e.latlng.lat;
         var lng = e.latlng.lng;

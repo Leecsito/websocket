@@ -6,6 +6,17 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors | SICOA'
 }).addTo(map);
 
+// ── Capa WMS de GeoServer ─────────────────────────────────────
+const urlGeoServerWMS = 'https://michael-photography-savings-commonly.trycloudflare.com/geoserver/seguridad_riobamba/wms';
+const capaGeoServer = L.tileLayer.wms(urlGeoServerWMS, {
+    layers: 'seguridad_riobamba:geoalerta_capas',
+    format: 'image/png',
+    transparent: true,
+    version: '1.1.0',
+    zIndex: 1000
+});
+capaGeoServer.addTo(map);
+
 // Variables globales
 let markersLayer = L.layerGroup().addTo(map);
 let allEvents = []; 
