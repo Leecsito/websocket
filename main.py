@@ -139,3 +139,6 @@ async def websocket_alertas(websocket: WebSocket):
             await asyncio.sleep(1)
     except WebSocketDisconnect:
         pass
+
+from fastapi.staticfiles import StaticFiles
+app.mount("/", StaticFiles(directory=".", html=True), name="static")
