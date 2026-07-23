@@ -59,10 +59,7 @@ function conectarWebSocket() {
             
             aplicarFiltros(); // Renderiza usando los filtros actuales
             
-            // ¡Aquí "molestamos" a GeoServer para que actualice la imagen del mapa!
-            if (capaGeoServer) {
-                capaGeoServer.setParams({ fake: Date.now() }, false);
-            }
+
         } catch (error) {
             console.error('Error parseando datos:', error);
         }
