@@ -199,11 +199,11 @@ function renderEvents(events) {
         marker.bindPopup(popupContent);
         markersLayer.addLayer(marker);
 
-        let genderIcon = '<i class="fa-solid fa-user" style="color: #64748b; font-size: 1.2rem;"></i>';
+        let genderIcon = '<i class="fa-solid fa-user" style="color: #64748b; margin-right: 8px;"></i>';
         if (ev.genero === 'Masculino') {
-            genderIcon = '<i class="fa-solid fa-person" style="color: #3b82f6; font-size: 1.2rem;"></i>';
+            genderIcon = '<i class="fa-solid fa-person" style="color: #3b82f6; margin-right: 8px;"></i>';
         } else if (ev.genero === 'Femenino') {
-            genderIcon = '<i class="fa-solid fa-person-dress" style="color: #ec4899; font-size: 1.2rem;"></i>';
+            genderIcon = '<i class="fa-solid fa-person-dress" style="color: #ec4899; margin-right: 8px;"></i>';
         }
 
         const { iconClass, bgClass } = getIconDataForType(ev.tipo);
@@ -211,12 +211,14 @@ function renderEvents(events) {
 
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td style="text-align: center;">${genderIcon}</td>
-            <td style="font-weight: 500;">${ev.nombres}</td>
-            <td>${ev.edad} años</td>
+            <td style="font-weight: 500; display:flex; align-items:center;">${genderIcon} ${ev.nombres}</td>
+            <td>${ev.edad}<br><span style="font-size:0.7rem;color:#64748b">años</span></td>
             <td>${alertHtml}</td>
-            <td><button class="btn-action" onclick="centrarMapa(${ev.lat}, ${ev.lng})">Ubicar</button></td>
         `;
+        // Add click event to row for centering map instead of a separate button
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', () => centrarMapa(ev.lat, ev.lng));
+        
         tableBody.appendChild(row);
     });
 }
@@ -233,22 +235,25 @@ let filterValues = {
     timeMax: 1440
 };
 
-// Gender Cards Logic
-const genderCards = document.querySelectorAll('.gender-card');
-const filterGenderInput = document.getElementById('filterGender');
-
-genderCards.forEach(card => {
-    card.addEventListener('click', () => {
-        // Remove active class from all
-        genderCards.forEach(c => c.classList.remove('active'));
-        // Add to clicked
-        card.classList.add('active');
-        // Update hidden input
-        filterGenderInput.value = card.dataset.value;
-        filterValues.gender = card.dataset.value;
-        if (allEvents.length > 0) aplicarFiltros();
+// Filter Cards Logic
+function setupFilterCards(containerId, inputId, filterKey) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const cards = container.querySelectorAll('.filter-card');
+    const input = document.getElementById(inputId);
+    
+    cards.forEach(card => {
+        card.addEventListener('click', () => {
+            cards.forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            input.value = card.dataset.value;
+            filterValues[filterKey] = card.dataset.value;
+            if (allEvents.length > 0) aplicarFiltros();
+        });
     });
-});
+}
+setupFilterCards('genderCards', 'filterGender', 'gender');
+setupFilterCards('typeCards', 'filterType', 'type');
 
 // Time Slider (0 to 1440 minutes)
 const sliderTime = document.getElementById('slider-time');
@@ -275,8 +280,8 @@ sliderTime.noUiSlider.on('update', function (values) {
 
 
 function aplicarFiltros() {
-    filterValues.gender = filterGenderInput.value;
-    const filterType = document.getElementById('filterType').value;
+    filterValues.gender = document.getElementById('filterGender').value;
+    filterValues.type = document.getElementById('filterType').value;
     const dateMinStr = document.getElementById('filterDateMin').value;
     const dateMaxStr = document.getElementById('filterDateMax').value;
     const ageMin = parseInt(document.getElementById('filterAgeMin').value);
@@ -290,14 +295,13 @@ function aplicarFiltros() {
         let match = true;
         if (filterValues.gender !== 'Todos' && ev.genero !== filterValues.gender) match = false;
         
-        if (filterType !== 'Todos') {
+        if (filterValues.type && filterValues.type !== 'Todos') {
             const evTipo = ev.tipo.toLowerCase();
-            const ft = filterType.toLowerCase();
+            const ft = filterValues.type.toLowerCase();
             // 'Medica' might have accent
             if (ft === 'medica' && !evTipo.includes('medica') && !evTipo.includes('médica') && !evTipo.includes('salud')) match = false;
             else if (ft === 'robo' && !evTipo.includes('robo') && !evTipo.includes('asalto') && !evTipo.includes('sospechoso')) match = false;
             else if (ft === 'accidente' && !evTipo.includes('accidente') && !evTipo.includes('choque')) match = false;
-            else if (ft === 'incendio' && !evTipo.includes('incendio')) match = false;
         }
         
         // Age filter
@@ -332,13 +336,19 @@ function aplicarFiltros() {
 
 // Limpiar filtros
 document.getElementById('btnClearFilters').addEventListener('click', () => {
-    // Reset cards
+    // Reset gender cards
+    const genderCards = document.querySelectorAll('#genderCards .filter-card');
     genderCards.forEach(c => c.classList.remove('active'));
-    document.querySelector('.gender-card[data-value="Todos"]').classList.add('active');
-    filterGenderInput.value = 'Todos';
+    document.querySelector('#genderCards .filter-card[data-value="Todos"]').classList.add('active');
+    document.getElementById('filterGender').value = 'Todos';
+
+    // Reset type cards
+    const typeCards = document.querySelectorAll('#typeCards .filter-card');
+    typeCards.forEach(c => c.classList.remove('active'));
+    document.querySelector('#typeCards .filter-card[data-value="Todos"]').classList.add('active');
+    document.getElementById('filterType').value = 'Todos';
 
     // Reset standard inputs
-    document.getElementById('filterType').value = 'Todos';
     document.getElementById('filterDateMin').value = '';
     document.getElementById('filterDateMax').value = '';
     document.getElementById('filterAgeMin').value = '';

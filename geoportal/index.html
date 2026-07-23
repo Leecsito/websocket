@@ -40,11 +40,11 @@
                 
                 <div class="filter-group">
                     <label>Género de la Víctima</label>
-                    <div class="gender-cards" id="genderCards">
-                        <div class="gender-card active" data-value="Todos">Todos</div>
-                        <div class="gender-card" data-value="Masculino">Masc</div>
-                        <div class="gender-card" data-value="Femenino">Fem</div>
-                        <div class="gender-card" data-value="Otro">Otro</div>
+                    <div class="filter-cards" id="genderCards">
+                        <div class="filter-card active" data-value="Todos">Todos</div>
+                        <div class="filter-card" data-value="Masculino">Masc</div>
+                        <div class="filter-card" data-value="Femenino">Fem</div>
+                        <div class="filter-card" data-value="Otro">Otro</div>
                     </div>
                     <input type="hidden" id="filterGender" value="Todos">
                 </div>
@@ -77,13 +77,13 @@
 
                 <div class="filter-group">
                     <label>Tipo de Alerta</label>
-                    <select id="filterType">
-                        <option value="Todos">Todos</option>
-                        <option value="Robo">Robo / Asalto / Sospechoso</option>
-                        <option value="Accidente">Accidente / Choque</option>
-                        <option value="Medica">Emergencia Médica</option>
-                        <option value="Incendio">Incendio</option>
-                    </select>
+                    <div class="filter-cards" id="typeCards">
+                        <div class="filter-card active" data-value="Todos">Todos</div>
+                        <div class="filter-card" data-value="Robo">Robo/Asalto</div>
+                        <div class="filter-card" data-value="Accidente">Accidente</div>
+                        <div class="filter-card" data-value="Medica">Médica</div>
+                    </div>
+                    <input type="hidden" id="filterType" value="Todos">
                 </div>
 
                 <button class="btn-secondary" id="btnClearFilters">Limpiar Todo</button>
@@ -113,11 +113,9 @@
                 <table id="logTable">
                     <thead>
                         <tr>
-                            <th style="width: 50px; text-align: center;">GÉNERO</th>
                             <th>CIUDADANO</th>
-                            <th>EDAD</th>
+                            <th style="width: 50px;">EDAD</th>
                             <th>ALERTA</th>
-                            <th>ACCIÓN</th>
                         </tr>
                     </thead>
                     <tbody id="logTableBody">
