@@ -39,9 +39,9 @@
     <main class="dash-shell">
         <section class="dash-topbar">
             <div>
-                <p class="eyebrow">Análisis geoespacial</p>
-                <h1>Dashboard</h1>
-                <p class="topbar-copy">Panel de inteligencia para analizar reportes de emergencia, patrones de ubicación y actividad ciudadana en Riobamba.</p>
+                <p class="eyebrow">Inteligencia operativa</p>
+                <h1>Dashboard analítico</h1>
+                <p class="topbar-copy">Gráficos y métricas para identificar patrones, priorizar recursos y tomar decisiones sobre emergencias en Riobamba.</p>
             </div>
             <div class="topbar-actions">
                 <div class="connection-card">
@@ -51,25 +51,22 @@
                         <small id="lastUpdate">Esperando datos</small>
                     </div>
                 </div>
-                <button type="button" id="btnResetFilters" class="ghost-button">
-                    <i class="fa-solid fa-rotate-left"></i> Limpiar filtros
-                </button>
             </div>
         </section>
 
-        <section class="kpi-grid" aria-label="Indicadores principales">
+        <section class="kpi-grid" aria-label="Indicadores clave">
             <article class="kpi-card">
-                <span class="kpi-icon total"><i class="fa-solid fa-layer-group"></i></span>
+                <span class="kpi-icon total"><i class="fa-solid fa-chart-line"></i></span>
                 <div>
-                    <p>Reportes filtrados</p>
+                    <p>Total analizado</p>
                     <strong id="kpiFiltered">0</strong>
                 </div>
             </article>
             <article class="kpi-card">
-                <span class="kpi-icon located"><i class="fa-solid fa-location-crosshairs"></i></span>
+                <span class="kpi-icon pending"><i class="fa-solid fa-hourglass-half"></i></span>
                 <div>
-                    <p>Georreferenciados</p>
-                    <strong id="kpiGeo">0</strong>
+                    <p>Pendientes</p>
+                    <strong id="kpiPending">0</strong>
                 </div>
             </article>
             <article class="kpi-card">
@@ -96,158 +93,176 @@
             <article class="kpi-card">
                 <span class="kpi-icon users"><i class="fa-solid fa-users"></i></span>
                 <div>
-                    <p>Usuarios registrados</p>
-                    <strong id="kpiUsers">0</strong>
+                    <p>Usuarios activos</p>
+                    <strong id="kpiActiveUsers">0</strong>
                 </div>
             </article>
         </section>
 
-        <section class="dash-layout">
-            <aside class="filters-panel" aria-label="Filtros estratégicos">
-                <div class="panel-header">
-                    <h2>Filtros</h2>
-                    <span class="filter-count" id="filterCount">0 resultados</span>
-                </div>
+        <section class="insights-panel" id="insightsPanel" aria-label="Hallazgos automáticos">
+            <div class="insights-header">
+                <i class="fa-solid fa-lightbulb"></i>
+                <h2>Hallazgos para decisión</h2>
+            </div>
+            <ul class="insights-list" id="insightsList">
+                <li>Aplica filtros o espera datos para generar recomendaciones.</li>
+            </ul>
+        </section>
 
-                <label class="field-label" for="searchInput">Búsqueda</label>
+        <section class="filters-bar" aria-label="Filtros de análisis">
+            <div class="filters-bar-head">
+                <h2>Filtros de análisis</h2>
+                <div class="filters-bar-actions">
+                    <span class="filter-count" id="filterCount">0 reportes</span>
+                    <button type="button" id="btnResetFilters" class="ghost-button">
+                        <i class="fa-solid fa-rotate-left"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+            <div class="filters-grid">
                 <div class="search-box">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input id="searchInput" type="search" placeholder="Nombre, cédula, tipo o descripción">
+                    <input id="searchInput" type="search" placeholder="Buscar...">
                 </div>
-
-                <label class="field-label">Tipo de alerta</label>
-                <div class="pill-group" id="typePills">
-                    <button type="button" class="pill active" data-value="todos">Todos</button>
-                    <button type="button" class="pill" data-value="asalto">Asalto</button>
-                    <button type="button" class="pill" data-value="accidente">Accidente</button>
-                    <button type="button" class="pill" data-value="medica">Emerg. médica</button>
-                </div>
-
-                <label class="field-label">Género</label>
-                <div class="pill-group" id="genderPills">
-                    <button type="button" class="pill active" data-value="todos">Todos</button>
-                    <button type="button" class="pill" data-value="Masculino">Masculino</button>
-                    <button type="button" class="pill" data-value="Femenino">Femenino</button>
-                </div>
-
-                <label class="field-label">Estado de atención</label>
-                <select id="statusSelect">
-                    <option value="todos">Todos</option>
+                <select id="typeSelect" aria-label="Tipo de alerta">
+                    <option value="todos">Todos los tipos</option>
+                    <option value="asalto">Asalto</option>
+                    <option value="accidente">Accidente</option>
+                    <option value="medica">Emergencia médica</option>
+                </select>
+                <select id="statusSelect" aria-label="Estado">
+                    <option value="todos">Todos los estados</option>
                     <option value="pendiente">Pendiente</option>
                     <option value="en_atencion">En atención</option>
                     <option value="cerrada">Cerrada</option>
                 </select>
-
-                <label class="field-label" for="userSelect">Usuario (cédula)</label>
-                <select id="userSelect">
+                <select id="genderSelect" aria-label="Género">
+                    <option value="todos">Todos los géneros</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                </select>
+                <select id="userSelect" aria-label="Usuario">
                     <option value="todos">Todos los usuarios</option>
                 </select>
-
-                <div class="field-row">
-                    <div>
-                        <label class="field-label" for="dateFrom">Desde</label>
-                        <input id="dateFrom" type="date">
-                    </div>
-                    <div>
-                        <label class="field-label" for="dateTo">Hasta</label>
-                        <input id="dateTo" type="date">
-                    </div>
-                </div>
-
-                <div class="field-row">
-                    <div>
-                        <label class="field-label" for="ageMin">Edad mín.</label>
-                        <input id="ageMin" type="number" min="0" max="120" placeholder="0">
-                    </div>
-                    <div>
-                        <label class="field-label" for="ageMax">Edad máx.</label>
-                        <input id="ageMax" type="number" min="0" max="120" placeholder="120">
-                    </div>
-                </div>
-
-                <label class="field-label">Rango horario</label>
+                <input id="dateFrom" type="date" aria-label="Desde">
+                <input id="dateTo" type="date" aria-label="Hasta">
+                <input id="ageMin" type="number" min="0" max="120" placeholder="Edad mín.">
+                <input id="ageMax" type="number" min="0" max="120" placeholder="Edad máx.">
+            </div>
+            <div class="time-filter">
+                <label>Rango horario</label>
                 <div class="time-range">
                     <span id="timeMinLabel">00:00</span>
                     <span id="timeMaxLabel">23:59</span>
                 </div>
                 <div id="timeSlider"></div>
+            </div>
+        </section>
 
-                <label class="field-label">Visualización del mapa</label>
-                <div class="segmented-control" id="mapModeControl">
-                    <button type="button" class="active" data-value="markers">Marcadores</button>
-                    <button type="button" data-value="heat">Mapa de calor</button>
-                </div>
-            </aside>
-
-            <section class="map-panel" aria-label="Mapa de análisis">
-                <div class="panel-header map-header">
+        <section class="charts-grid" aria-label="Gráficos analíticos">
+            <article class="chart-panel chart-wide">
+                <div class="chart-head">
                     <div>
-                        <h2>Mapa de incidentes</h2>
-                        <p id="mapSummary">Sin puntos para mostrar</p>
+                        <h3>Tendencia de reportes</h3>
+                        <p>Volumen diario para detectar picos y tendencias</p>
+                    </div>
+                </div>
+                <div class="svg-chart" id="chartTrend"></div>
+            </article>
+
+            <article class="chart-panel chart-wide">
+                <div class="chart-head">
+                    <div>
+                        <h3>Distribución por hora del día</h3>
+                        <p>Identifica franjas críticas para reforzar patrullaje o personal médico</p>
+                    </div>
+                    <strong class="chart-highlight" id="peakHourLabel">—</strong>
+                </div>
+                <div class="svg-chart" id="chartHourly"></div>
+            </article>
+
+            <article class="chart-panel">
+                <div class="chart-head">
+                    <h3>Composición por tipo</h3>
+                </div>
+                <div class="donut-wrap">
+                    <div class="donut" id="chartDonutType"></div>
+                    <ul class="legend" id="legendType"></ul>
+                </div>
+            </article>
+
+            <article class="chart-panel">
+                <div class="chart-head">
+                    <h3>Estado de atención</h3>
+                </div>
+                <div class="funnel-chart" id="chartStatus"></div>
+            </article>
+
+            <article class="chart-panel">
+                <div class="chart-head">
+                    <h3>Perfil por género</h3>
+                </div>
+                <div class="bar-chart" id="chartGender"></div>
+            </article>
+
+            <article class="chart-panel">
+                <div class="chart-head">
+                    <h3>Grupos de edad</h3>
+                </div>
+                <div class="bar-chart" id="chartAge"></div>
+            </article>
+
+            <article class="chart-panel">
+                <div class="chart-head">
+                    <h3>Usuarios con más reportes</h3>
+                </div>
+                <div class="bar-chart" id="chartUsers"></div>
+            </article>
+
+            <article class="chart-panel">
+                <div class="chart-head">
+                    <h3>Zonas con mayor concentración</h3>
+                    <p class="chart-sub">Referencia geográfica para decisiones de despliegue</p>
+                </div>
+                <ul class="rank-list" id="hotspotList"></ul>
+            </article>
+        </section>
+
+        <section class="bottom-row">
+            <article class="mini-map-panel">
+                <div class="chart-head">
+                    <div>
+                        <h3>Vista geográfica complementaria</h3>
+                        <p id="mapSummary">Mapa de apoyo — no es el foco principal del análisis</p>
                     </div>
                     <button type="button" id="btnFitBounds" class="ghost-button" title="Ajustar vista">
-                        <i class="fa-solid fa-expand"></i> Ajustar vista
+                        <i class="fa-solid fa-expand"></i>
                     </button>
                 </div>
                 <div id="analysisMap"></div>
-            </section>
+            </article>
 
-            <aside class="analytics-panel" aria-label="Análisis estadístico">
-                <div class="panel-header">
-                    <h2>Distribución</h2>
+            <article class="decision-panel">
+                <div class="chart-head">
+                    <h3>Resumen ejecutivo</h3>
                 </div>
-
-                <article class="chart-card">
-                    <h3>Por tipo de alerta</h3>
-                    <div class="bar-chart" id="chartType"></div>
-                </article>
-
-                <article class="chart-card">
-                    <h3>Por franja horaria</h3>
-                    <div class="bar-chart" id="chartHour"></div>
-                </article>
-
-                <article class="chart-card">
-                    <h3>Por estado de atención</h3>
-                    <div class="bar-chart" id="chartStatus"></div>
-                </article>
-
-                <article class="chart-card hotspots">
-                    <h3>Zonas con más reportes</h3>
-                    <ul class="hotspot-list" id="hotspotList">
-                        <li class="empty-hotspot">Aplica filtros para ver concentraciones</li>
-                    </ul>
-                </article>
-            </aside>
-        </section>
-
-        <section class="table-panel" aria-label="Detalle de reportes">
-            <div class="panel-header">
-                <div>
-                    <h2>Detalle de reportes</h2>
-                    <p id="tableCount">0 registros visibles</p>
+                <div class="exec-metrics" id="execMetrics"></div>
+                <div class="table-wrap compact-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Ciudadano</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody">
+                            <tr><td colspan="4" class="empty-cell">Cargando...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Fecha</th>
-                            <th>Tipo</th>
-                            <th>Ciudadano</th>
-                            <th>Edad</th>
-                            <th>Estado</th>
-                            <th>Coordenadas</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reportTableBody">
-                        <tr>
-                            <td colspan="7" class="empty-cell">Cargando reportes...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            </article>
         </section>
     </main>
 
