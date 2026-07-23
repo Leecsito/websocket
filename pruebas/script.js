@@ -31,16 +31,6 @@ function initMap() {
         maxZoom: 19
     }).addTo(pickMap);
 
-    // ── Capa WMS de GeoServer ───────────────────────────
-    var urlGeoServerWMS = 'https://potential-tucson-reserve-switching.trycloudflare.com/geoserver/seguridad_riobamba/wms';
-    capaGeoServerPruebas = L.tileLayer.wms(urlGeoServerWMS, {
-        layers: 'seguridad_riobamba:geoalerta_capas',
-        format: 'image/png',
-        transparent: true,
-        version: '1.1.0',
-        zIndex: 1000
-    });
-    capaGeoServerPruebas.addTo(pickMap);
 
     pickMap.on('click', function(e) {
         var lat = e.latlng.lat;
