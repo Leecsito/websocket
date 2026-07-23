@@ -28,35 +28,31 @@ def consultar_alertas():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
-        SELECT id, tipo_evento, fecha, hora, descripcion, cedula, nombres, apellidos, 
-               celular, genero, fecha_nacimiento, edad, contacto_emergencia,
-               ST_AsGeoJSON(geom) as geom 
-        FROM alertas ORDER BY id DESC
+        SELECT id, tipo_reporte, fecha_hora, descripcion, cedula, nombres, apellidos,
+               celular, genero, fecha_nacimiento, edad, celular_contacto_emergencia,
+               latitud, longitud
+        FROM vista_reportes_emergencia ORDER BY id DESC
     """)
     rows = cur.fetchall()
     cur.close()
     conn.close()
 
     for row in rows:
-        if row['fecha']: row['fecha'] = str(row['fecha'])
-        if row['hora']: row['hora'] = str(row['hora'])
+        if row['fecha_hora']:       row['fecha_hora']       = str(row['fecha_hora'])
         if row['fecha_nacimiento']: row['fecha_nacimiento'] = str(row['fecha_nacimiento'])
 
     return [dict(row) for row in rows]
 
 class AlertaRequest(BaseModel):
-    tipo_evento: str
-    fecha: str
-    hora: str
+    tipo_reporte: str
     descripcion: Optional[str] = None
-    cedula: Optional[str] = None
-    nombres: Optional[str] = None
-    apellidos: Optional[str] = None
-    celular: Optional[str] = None
-    genero: Optional[str] = None
-    fecha_nacimiento: Optional[str] = None
-    edad: Optional[int] = None
-    contacto_emergencia: Optional[str] = None
+    cedula: str
+    nombres: str
+    apellidos: str
+    celular: str
+    genero: str
+    fecha_nacimiento: str
+    celular_contacto_emergencia: str
     latitud: Optional[float] = None
     longitud: Optional[float] = None
 
@@ -64,24 +60,26 @@ def insertar_alerta(data: AlertaRequest):
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        geom = None
-        if data.latitud is not None and data.longitud is not None:
-            geom = f"ST_SetSRID(ST_MakePoint({data.longitud}, {data.latitud}), 4326)"
 
-        geom_sql = geom if geom else "NULL"
+        if data.latitud is not None and data.longitud is not None:
+            geom_sql = f"ST_SetSRID(ST_MakePoint({data.longitud}, {data.latitud}), 4326)"
+        else:
+            geom_sql = "NULL"
 
         cur.execute(f"""
-            INSERT INTO alertas (
-                tipo_evento, fecha, hora, descripcion, cedula, nombres, apellidos,
-                celular, genero, fecha_nacimiento, edad, contacto_emergencia, geom
+            INSERT INTO reportes_emergencia (
+                tipo_reporte, descripcion, cedula, nombres, apellidos,
+                celular, genero, fecha_nacimiento, celular_contacto_emergencia,
+                latitud, longitud, ubicacion
             ) VALUES (
-                %s, %s, %s, %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, {geom_sql}
+                %s, %s, %s, %s, %s,
+                %s, %s, %s, %s,
+                %s, %s, {geom_sql}
             )
         """, (
-            data.tipo_evento, data.fecha, data.hora, data.descripcion,
-            data.cedula, data.nombres, data.apellidos, data.celular,
-            data.genero, data.fecha_nacimiento, data.edad, data.contacto_emergencia
+            data.tipo_reporte, data.descripcion, data.cedula, data.nombres, data.apellidos,
+            data.celular, data.genero, data.fecha_nacimiento, data.celular_contacto_emergencia,
+            data.latitud, data.longitud
         ))
         conn.commit()
         cur.close()
@@ -90,25 +88,28 @@ def insertar_alerta(data: AlertaRequest):
         print(f"Error insertando alerta: {e}")
         raise e
 
-def actualizar_alerta(id: int, data: AlertaRequest):
+def actualizar_alerta(reporte_id: int, data: AlertaRequest):
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        geom = None
-        if data.latitud is not None and data.longitud is not None:
-            geom = f"ST_SetSRID(ST_MakePoint({data.longitud}, {data.latitud}), 4326)"
 
-        geom_sql = geom if geom else "NULL"
+        if data.latitud is not None and data.longitud is not None:
+            geom_sql = f"ST_SetSRID(ST_MakePoint({data.longitud}, {data.latitud}), 4326)"
+        else:
+            geom_sql = "NULL"
 
         cur.execute(f"""
-            UPDATE alertas SET
-                tipo_evento = %s, fecha = %s, hora = %s, descripcion = %s, cedula = %s, nombres = %s, apellidos = %s,
-                celular = %s, genero = %s, fecha_nacimiento = %s, edad = %s, contacto_emergencia = %s, geom = {geom_sql}
+            UPDATE reportes_emergencia SET
+                tipo_reporte = %s, descripcion = %s, cedula = %s, nombres = %s, apellidos = %s,
+                celular = %s, genero = %s, fecha_nacimiento = %s,
+                celular_contacto_emergencia = %s,
+                latitud = %s, longitud = %s, ubicacion = {geom_sql}
             WHERE id = %s
         """, (
-            data.tipo_evento, data.fecha, data.hora, data.descripcion,
-            data.cedula, data.nombres, data.apellidos, data.celular,
-            data.genero, data.fecha_nacimiento, data.edad, data.contacto_emergencia, id
+            data.tipo_reporte, data.descripcion, data.cedula, data.nombres, data.apellidos,
+            data.celular, data.genero, data.fecha_nacimiento,
+            data.celular_contacto_emergencia,
+            data.latitud, data.longitud, reporte_id
         ))
         conn.commit()
         cur.close()

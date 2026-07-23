@@ -3,17 +3,14 @@ from pydantic import BaseModel
 from typing import Optional
 
 class AlertaRequest(BaseModel):
-    tipo_evento: str
-    fecha: str
-    hora: str
+    tipo_reporte: str
     descripcion: Optional[str] = None
-    cedula: Optional[str] = None
-    nombres: Optional[str] = None
-    apellidos: Optional[str] = None
-    celular: Optional[str] = None
-    genero: Optional[str] = None
-    fecha_nacimiento: Optional[str] = None
-    edad: Optional[int] = None
-    contacto_emergencia: Optional[str] = None
+    cedula: str
+    nombres: str
+    apellidos: str
+    celular: str
+    genero: str
+    fecha_nacimiento: str
+    celular_contacto_emergencia: str
     latitud: Optional[float] = None
     longitud: Optional[float] = None
