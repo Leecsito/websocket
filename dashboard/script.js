@@ -98,7 +98,7 @@ function initMap() {
         maxZoom: 18
     }).addTo(map);
 
-    heatLayer = L.heatLayer([], { radius: 22, blur: 16, maxZoom: 16 }).addTo(map);
+    heatLayer = L.heatLayer([], { radius: 24, blur: 16, maxZoom: 16 }).addTo(map);
 
     setTimeout(function() {
         if (map) map.invalidateSize();
@@ -122,6 +122,29 @@ function initTimeSlider() {
         document.getElementById('timeMinLabel').textContent = formatMinutes(filters.timeMin);
         document.getElementById('timeMaxLabel').textContent = formatMinutes(filters.timeMax);
         applyFilters();
+    });
+}
+
+function initChipFilters() {
+    ['genderChips', 'typeChips', 'statusChips'].forEach(function(groupId) {
+        var group = document.getElementById(groupId);
+        if (!group) return;
+
+        group.addEventListener('click', function(e) {
+            var btn = e.target.closest('.chip-btn');
+            if (!btn) return;
+
+            var buttons = group.querySelectorAll('.chip-btn');
+            buttons.forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+
+            var val = btn.dataset.value;
+            if (groupId === 'genderChips') filters.gender = val;
+            if (groupId === 'typeChips') filters.type = val;
+            if (groupId === 'statusChips') filters.status = val;
+
+            applyFilters();
+        });
     });
 }
 
@@ -151,16 +174,22 @@ function populateUserSelect() {
 }
 
 function applyFilters() {
-    filters.search = document.getElementById('searchInput').value.trim().toLowerCase();
-    filters.type = document.getElementById('typeSelect').value;
-    filters.status = document.getElementById('statusSelect').value;
-    filters.gender = document.getElementById('genderSelect').value;
-    filters.userCedula = document.getElementById('userSelect').value;
-    filters.dateFrom = document.getElementById('dateFrom').value;
-    filters.dateTo = document.getElementById('dateTo').value;
+    var searchInput = document.getElementById('searchInput');
+    if (searchInput) filters.search = searchInput.value.trim().toLowerCase();
 
-    var ageMin = parseInt(document.getElementById('ageMin').value, 10);
-    var ageMax = parseInt(document.getElementById('ageMax').value, 10);
+    var userSelect = document.getElementById('userSelect');
+    if (userSelect) filters.userCedula = userSelect.value;
+
+    var dateFrom = document.getElementById('dateFrom');
+    if (dateFrom) filters.dateFrom = dateFrom.value;
+
+    var dateTo = document.getElementById('dateTo');
+    if (dateTo) filters.dateTo = dateTo.value;
+
+    var ageMinInput = document.getElementById('ageMin');
+    var ageMaxInput = document.getElementById('ageMax');
+    var ageMin = ageMinInput ? parseInt(ageMinInput.value, 10) : NaN;
+    var ageMax = ageMaxInput ? parseInt(ageMaxInput.value, 10) : NaN;
     filters.ageMin = isNaN(ageMin) ? null : ageMin;
     filters.ageMax = isNaN(ageMax) ? null : ageMax;
 
@@ -194,7 +223,9 @@ function applyFilters() {
 }
 
 function renderDashboard() {
-    document.getElementById('filterCount').textContent = filteredReports.length + ' reportes';
+    var countEl = document.getElementById('filterCount');
+    if (countEl) countEl.textContent = filteredReports.length + ' reportes';
+
     updateKpis();
     renderMap();
     renderTrendChart();
@@ -327,7 +358,7 @@ function renderHourlyChart() {
     var chartW = w - padLeft - padRight;
     var chartH = h - padTop - padBottom;
     var slotW = chartW / 24;
-    var barW = slotW - 3; // 3px gap between bars
+    var barW = slotW - 3;
 
     var svgParts = [];
 
@@ -374,7 +405,6 @@ function renderHourlyChart() {
         );
 
         // HOUR LABEL DIRECTLY ALIGNED UNDER ITS CORRESPONDING BAR
-        // Show label for every 2 hours + hour 23 so the x-axis is cleanly legible and 100% unambiguous
         if (i % 2 === 0 || i === 23) {
             svgParts.push(
                 '<text x="' + centerX + '" y="' + (padTop + chartH + 20) + '" text-anchor="middle" fill="#475569" font-size="10.5" font-weight="700">' + hourLabelText + '</text>'
@@ -615,15 +645,44 @@ function fitMapBounds() {
 }
 
 function resetFilters() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('typeSelect').value = 'todos';
-    document.getElementById('statusSelect').value = 'todos';
-    document.getElementById('genderSelect').value = 'todos';
-    document.getElementById('userSelect').value = 'todos';
-    document.getElementById('dateFrom').value = '';
-    document.getElementById('dateTo').value = '';
-    document.getElementById('ageMin').value = '';
-    document.getElementById('ageMax').value = '';
+    var searchEl = document.getElementById('searchInput');
+    if (searchEl) searchEl.value = '';
+
+    var userEl = document.getElementById('userSelect');
+    if (userEl) userEl.value = 'todos';
+
+    var dateFromEl = document.getElementById('dateFrom');
+    if (dateFromEl) dateFromEl.value = '';
+
+    var dateToEl = document.getElementById('dateTo');
+    if (dateToEl) dateToEl.value = '';
+
+    var ageMinEl = document.getElementById('ageMin');
+    if (ageMinEl) ageMinEl.value = '';
+
+    var ageMaxEl = document.getElementById('ageMax');
+    if (ageMaxEl) ageMaxEl.value = '';
+
+    filters.search = '';
+    filters.type = 'todos';
+    filters.status = 'todos';
+    filters.gender = 'todos';
+    filters.userCedula = 'todos';
+    filters.dateFrom = '';
+    filters.dateTo = '';
+    filters.ageMin = null;
+    filters.ageMax = null;
+
+    ['genderChips', 'typeChips', 'statusChips'].forEach(function(groupId) {
+        var group = document.getElementById(groupId);
+        if (!group) return;
+        var buttons = group.querySelectorAll('.chip-btn');
+        buttons.forEach(function(b) {
+            if (b.dataset.value === 'todos') b.classList.add('active');
+            else b.classList.remove('active');
+        });
+    });
+
     var slider = document.getElementById('timeSlider');
     if (slider && slider.noUiSlider) {
         slider.noUiSlider.set([0, 1440]);
@@ -683,8 +742,7 @@ function loadUsuarios() {
         .catch(function(e) { console.error('Error usuarios:', e); });
 }
 
-['searchInput', 'typeSelect', 'statusSelect', 'genderSelect', 'userSelect',
- 'dateFrom', 'dateTo', 'ageMin', 'ageMax'].forEach(function(id) {
+['searchInput', 'userSelect', 'dateFrom', 'dateTo', 'ageMin', 'ageMax'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) {
         el.addEventListener('input', applyFilters);
@@ -700,5 +758,6 @@ if (btnFit) btnFit.addEventListener('click', fitMapBounds);
 
 initMap();
 initTimeSlider();
+initChipFilters();
 loadUsuarios();
 connectAlertas();

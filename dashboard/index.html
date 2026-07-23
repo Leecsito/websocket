@@ -101,8 +101,100 @@
             </article>
         </section>
 
-        <!-- MAPA DE CALOR ARRIBA -->
-        <section class="heatmap-hero-section">
+        <!-- TOP HERO GRID: FILTERS ON LEFT | HEATMAP ON RIGHT -->
+        <section class="top-hero-grid">
+            <!-- PANEL DE FILTROS DINÁMICOS (IZQUIERDA) -->
+            <aside class="filters-sidebar-panel" aria-label="Filtros de análisis">
+                <div class="filters-head">
+                    <h2>FILTROS</h2>
+                    <span class="filter-count-badge" id="filterCount">0 reportes</span>
+                </div>
+
+                <!-- Búsqueda -->
+                <div class="filter-group">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input id="searchInput" type="search" placeholder="Buscar...">
+                    </div>
+                </div>
+
+                <!-- Género de la Víctima (Pill chips con iconos) -->
+                <div class="filter-group">
+                    <label class="filter-label">Género de la Víctima</label>
+                    <div class="chip-group icon-chips" id="genderChips">
+                        <button type="button" class="chip-btn active" data-value="todos" title="Todos los géneros">Todos</button>
+                        <button type="button" class="chip-btn" data-value="Masculino" title="Masculino"><i class="fa-solid fa-mars"></i></button>
+                        <button type="button" class="chip-btn" data-value="Femenino" title="Femenino"><i class="fa-solid fa-venus"></i></button>
+                        <button type="button" class="chip-btn" data-value="Otro" title="Otro"><i class="fa-solid fa-user"></i></button>
+                    </div>
+                </div>
+
+                <!-- Fechas (Desde - Hasta) -->
+                <div class="filter-group">
+                    <label class="filter-label">Fechas (Desde - Hasta)</label>
+                    <div class="input-pair">
+                        <input id="dateFrom" type="date" aria-label="Desde">
+                        <input id="dateTo" type="date" aria-label="Hasta">
+                    </div>
+                </div>
+
+                <!-- Hora (Rango) -->
+                <div class="filter-group">
+                    <label class="filter-label">Hora (Rango)</label>
+                    <div class="time-range-display">
+                        <span id="timeMinLabel">00:00</span>
+                        <span>/</span>
+                        <span id="timeMaxLabel">23:59</span>
+                    </div>
+                    <div id="timeSlider"></div>
+                </div>
+
+                <!-- Edad (Min - Max) -->
+                <div class="filter-group">
+                    <label class="filter-label">Edad (Min - Max)</label>
+                    <div class="input-pair">
+                        <input id="ageMin" type="number" min="0" max="120" placeholder="Min">
+                        <input id="ageMax" type="number" min="0" max="120" placeholder="Max">
+                    </div>
+                </div>
+
+                <!-- Tipo de Alerta (Pills dinámicas) -->
+                <div class="filter-group">
+                    <label class="filter-label">Tipo de Alerta</label>
+                    <div class="chip-group" id="typeChips">
+                        <button type="button" class="chip-btn active" data-value="todos">Todos</button>
+                        <button type="button" class="chip-btn" data-value="asalto">Robo/Asalto</button>
+                        <button type="button" class="chip-btn" data-value="accidente">Accidente</button>
+                        <button type="button" class="chip-btn" data-value="medica">Médica</button>
+                    </div>
+                </div>
+
+                <!-- Estado de Atención (Pills dinámicas) -->
+                <div class="filter-group">
+                    <label class="filter-label">Estado de Atención</label>
+                    <div class="chip-group" id="statusChips">
+                        <button type="button" class="chip-btn active" data-value="todos">Todos</button>
+                        <button type="button" class="chip-btn" data-value="pendiente">Pendiente</button>
+                        <button type="button" class="chip-btn" data-value="en_atencion">En atención</button>
+                        <button type="button" class="chip-btn" data-value="cerrada">Cerrada</button>
+                    </div>
+                </div>
+
+                <!-- Usuario Emisor -->
+                <div class="filter-group">
+                    <label class="filter-label">Usuario Emisor</label>
+                    <select id="userSelect" aria-label="Usuario">
+                        <option value="todos">Todos los usuarios</option>
+                    </select>
+                </div>
+
+                <!-- Botón Limpiar Todo -->
+                <button type="button" id="btnResetFilters" class="reset-all-btn">
+                    <i class="fa-solid fa-rotate-left"></i> Limpiar Todo
+                </button>
+            </aside>
+
+            <!-- MAPA DE CALOR (DERECHA - MÁS GRANDE) -->
             <article class="heatmap-hero-panel">
                 <div class="chart-head">
                     <div>
@@ -120,62 +212,11 @@
             </article>
         </section>
 
-        <!-- Filtros de Análisis -->
-        <section class="filters-bar" aria-label="Filtros de análisis">
-            <div class="filters-bar-head">
-                <h2><i class="fa-solid fa-filter"></i> Filtros de análisis</h2>
-                <div class="filters-bar-actions">
-                    <span class="filter-count" id="filterCount">0 reportes</span>
-                    <button type="button" id="btnResetFilters" class="ghost-button">
-                        <i class="fa-solid fa-rotate-left"></i> Limpiar
-                    </button>
-                </div>
-            </div>
-            <div class="filters-grid">
-                <div class="search-box">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input id="searchInput" type="search" placeholder="Buscar...">
-                </div>
-                <select id="typeSelect" aria-label="Tipo de alerta">
-                    <option value="todos">Todos los tipos</option>
-                    <option value="asalto">Asalto</option>
-                    <option value="accidente">Accidente</option>
-                    <option value="medica">Emergencia médica</option>
-                </select>
-                <select id="statusSelect" aria-label="Estado">
-                    <option value="todos">Todos los estados</option>
-                    <option value="pendiente">Pendiente</option>
-                    <option value="en_atencion">En atención</option>
-                    <option value="cerrada">Cerrada</option>
-                </select>
-                <select id="genderSelect" aria-label="Género">
-                    <option value="todos">Todos los géneros</option>
-                    <option value="Masculino">Masculino</option>
-                    <option value="Femenino">Femenino</option>
-                </select>
-                <select id="userSelect" aria-label="Usuario">
-                    <option value="todos">Todos los usuarios</option>
-                </select>
-                <input id="dateFrom" type="date" aria-label="Desde">
-                <input id="dateTo" type="date" aria-label="Hasta">
-                <input id="ageMin" type="number" min="0" max="120" placeholder="Edad mín.">
-                <input id="ageMax" type="number" min="0" max="120" placeholder="Edad máx.">
-            </div>
-            <div class="time-filter">
-                <label>Rango horario</label>
-                <div class="time-range">
-                    <span id="timeMinLabel">00:00</span>
-                    <span id="timeMaxLabel">23:59</span>
-                </div>
-                <div id="timeSlider"></div>
-            </div>
-        </section>
-
-        <!-- DISTRIBUCIÓN DINÁMICA DE TARJETAS EN 3 COLUMNAS (MENSURA ASIMÉTRICA) -->
+        <!-- DISTRIBUCIÓN DINÁMICA DE TARJETAS EN 3 COLUMNAS -->
         <section class="masonry-container" aria-label="Tablero dinámico de gráficos">
             <!-- COLUMNA 1: Tarjeta corta superior + Tarjeta alta inferior -->
             <div class="masonry-col col-1">
-                <!-- Tarjeta corta (Horizontal) -->
+                <!-- Tarjeta corta -->
                 <article class="chart-panel card-short">
                     <div class="chart-head">
                         <div>
@@ -186,7 +227,7 @@
                     <div class="svg-chart" id="chartTrend"></div>
                 </article>
 
-                <!-- Tarjeta alta (Vertical) -->
+                <!-- Tarjeta alta -->
                 <article class="chart-panel card-tall decision-panel">
                     <div class="chart-head">
                         <div>
