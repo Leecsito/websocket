@@ -175,8 +175,9 @@ function renderEvents(events) {
     tableBody.innerHTML = '';
     
     document.getElementById('activeEvents').textContent = events.length;
+    const eventsToRender = events.slice(-50).reverse(); // Últimos 50, más recientes arriba
 
-    events.forEach(ev => {
+    eventsToRender.forEach(ev => {
         const marker = L.marker([ev.lat, ev.lng], {
             icon: getIconForType(ev.tipo)
         });
@@ -245,10 +246,7 @@ document.getElementById('btnClearFilters').addEventListener('click', () => {
     aplicarFiltros();
 });
 
-// Botón de forzar actualización 
-document.getElementById('btnForceUpdate').addEventListener('click', () => {
-    aplicarFiltros(); // Simplemente vuelve a renderizar, el WS ya tiene los datos vivos
-});
+
 
 // Inicializar conexión
 setTimeout(conectarWebSocket, 500);
