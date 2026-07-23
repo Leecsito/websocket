@@ -2,13 +2,82 @@
 const map = L.map('map').setView([-1.6669, -78.6521], 13);
 
 // Capa base de OpenStreetMap
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const mapaBase = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors | SICOA'
 }).addTo(map);
 
 // Variables globales
 let markersLayer = L.layerGroup().addTo(map);
 let allEvents = []; 
+
+// --- Capas de GeoServer ---
+const urlGeoServer = "https://beverages-wings-joke-championships.trycloudflare.com/geoserver/geoalerta";
+const urlWms = `${urlGeoServer}/wms`;
+
+map.createPane("panelVias");
+map.getPane("panelVias").style.zIndex = "410";
+map.getPane("panelVias").style.pointerEvents = "none";
+
+map.createPane("panelLimiteHalo");
+map.getPane("panelLimiteHalo").style.zIndex = "425";
+map.getPane("panelLimiteHalo").style.pointerEvents = "none";
+
+map.createPane("panelLimite");
+map.getPane("panelLimite").style.zIndex = "430";
+map.getPane("panelLimite").style.pointerEvents = "none";
+
+const capaVias = L.tileLayer.wms(urlWms, {
+    layers: "geoalerta:riobamba_vias_urbanas",
+    styles: "vias_geoalerta",
+    format: "image/png",
+    transparent: true,
+    version: "1.1.1",
+    tiled: true,
+    opacity: 0.82,
+    pane: "panelVias",
+}).addTo(map);
+
+const capaLimiteHalo = L.geoJSON(null, {
+    pane: "panelLimiteHalo",
+    interactive: false,
+    style: { color: "#FFFFFF", weight: 8, opacity: 0.96, fillOpacity: 0, lineCap: "round", lineJoin: "round" }
+});
+
+const capaLimitePrincipal = L.geoJSON(null, {
+    pane: "panelLimite",
+    interactive: false,
+    style: { color: "#6D28D9", weight: 4, opacity: 1, fillColor: "#6D28D9", fillOpacity: 0.025, lineCap: "round", lineJoin: "round" }
+});
+
+const capaLimite = L.layerGroup([capaLimiteHalo, capaLimitePrincipal]).addTo(map);
+
+// Cargar limite urbano por WFS
+async function cargarLimiteUrbano() {
+    const url = `${urlGeoServer}/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=geoalerta:riobamba_limite_urbano&outputFormat=application/json&srsName=EPSG:4326`;
+    try {
+        const respuesta = await fetch(url, { method: "GET", cache: "no-store", headers: { Accept: "application/json" }});
+        if (respuesta.ok) {
+            const geojson = await respuesta.json();
+            capaLimiteHalo.addData(geojson);
+            capaLimitePrincipal.addData(geojson);
+        }
+    } catch (e) {
+        console.error("Error cargando limite urbano:", e);
+    }
+}
+cargarLimiteUrbano();
+
+// Añadir control de capas
+const baseLayers = {
+    "OpenStreetMap": mapaBase
+};
+const overlayLayers = {
+    "Límite urbano": capaLimite,
+    "Vías urbanas": capaVias,
+    "Reportes": markersLayer
+};
+L.control.layers(baseLayers, overlayLayers, {position: 'topright'}).addTo(map);
+
 
 // Función para conectarse al WebSocket real
 // API_URL y WS_URL provienen de ../config.js
