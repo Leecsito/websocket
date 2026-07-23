@@ -34,6 +34,33 @@ def consultar_alertas():
     return [dict(row) for row in rows]
 
 
+def consultar_usuarios():
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
+        SELECT id, email, phone, created_at, last_sign_in_at, raw_user_meta_data
+        FROM auth.users
+        ORDER BY created_at DESC
+    """)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    usuarios = []
+    for row in rows:
+        metadata = row.get("raw_user_meta_data") or {}
+        usuarios.append({
+            "id": str(row["id"]),
+            "email": row.get("email"),
+            "phone": row.get("phone"),
+            "created_at": str(row["created_at"]) if row.get("created_at") else None,
+            "last_sign_in_at": str(row["last_sign_in_at"]) if row.get("last_sign_in_at") else None,
+            "nombre": metadata.get("name") or metadata.get("full_name") or metadata.get("nombres"),
+        })
+
+    return usuarios
+
+
 def insertar_alerta(data: AlertaRequest):
     try:
         conn = get_connection()

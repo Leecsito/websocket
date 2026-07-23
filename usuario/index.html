@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MegaGeo Security - Usuarios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../header/styles.css">
+    <link rel="stylesheet" href="../footer/styles.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <script>
+        fetch('../header/index.html')
+            .then(function(response) { return response.text(); })
+            .then(function(data) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(data, 'text/html');
+                var header = doc.querySelector('header');
+                if (header) {
+                    var links = header.querySelectorAll('.main-nav a');
+                    links.forEach(function(link) { link.classList.remove('active'); });
+                    var userLink = Array.from(links).find(function(link) {
+                        return link.textContent.indexOf('Usuarios') !== -1;
+                    });
+                    if (userLink) userLink.classList.add('active');
+                    document.getElementById('header-placeholder').replaceWith(header);
+                    document.dispatchEvent(new Event('headerLoaded'));
+                }
+            });
+    </script>
+
+    <main class="users-shell">
+        <section class="users-header">
+            <div>
+                <p class="eyebrow">Administracion</p>
+                <h1>Usuarios</h1>
+                <p>Listado simple de usuarios registrados en Supabase Auth.</p>
+            </div>
+            <div class="total-card">
+                <span id="totalUsers">0</span>
+                <small>usuarios</small>
+            </div>
+        </section>
+
+        <section class="users-panel">
+            <div class="toolbar">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input id="searchInput" type="search" placeholder="Buscar por nombre, correo o telefono">
+                </div>
+                <button type="button" id="btnReload" title="Recargar usuarios" aria-label="Recargar usuarios">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Correo</th>
+                            <th>Telefono</th>
+                            <th>Registro</th>
+                            <th>Ultimo ingreso</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="5" class="empty-cell">Cargando usuarios...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+    <script>
+        fetch('../footer/index.html')
+            .then(function(response) { return response.text(); })
+            .then(function(data) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(data, 'text/html');
+                var footer = doc.querySelector('footer');
+                if (footer) {
+                    document.getElementById('footer-placeholder').replaceWith(footer);
+                    document.dispatchEvent(new Event('footerLoaded'));
+                }
+            });
+    </script>
+
+    <script src="../config.js"></script>
+    <script src="script.js"></script>
+    <script src="../header/script.js"></script>
+    <script src="../footer/script.js"></script>
+</body>
+</html>

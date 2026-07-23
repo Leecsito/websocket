@@ -3,7 +3,7 @@ import asyncio
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.concurrency import run_in_threadpool
 from backend.models import AlertaRequest, EstadoAtencionRequest
-from backend.crud import consultar_alertas, insertar_alerta, actualizar_alerta, actualizar_estado_atencion
+from backend.crud import consultar_alertas, consultar_usuarios, insertar_alerta, actualizar_alerta, actualizar_estado_atencion
 
 router = APIRouter()
 
@@ -27,6 +27,11 @@ async def editar_estado_alerta(alerta_id: int, req: EstadoAtencionRequest):
         return {"message": "Estado de atencion actualizado exitosamente"}
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/usuarios")
+async def listar_usuarios():
+    return await run_in_threadpool(consultar_usuarios)
 
 
 @router.websocket("/ws/alertas")

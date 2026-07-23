@@ -46,6 +46,32 @@ def consultar_alertas():
 
     return [dict(row) for row in rows]
 
+def consultar_usuarios():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
+        SELECT id, email, phone, created_at, last_sign_in_at, raw_user_meta_data
+        FROM auth.users
+        ORDER BY created_at DESC
+    """)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    usuarios = []
+    for row in rows:
+        metadata = row.get("raw_user_meta_data") or {}
+        usuarios.append({
+            "id": str(row["id"]),
+            "email": row.get("email"),
+            "phone": row.get("phone"),
+            "created_at": str(row["created_at"]) if row.get("created_at") else None,
+            "last_sign_in_at": str(row["last_sign_in_at"]) if row.get("last_sign_in_at") else None,
+            "nombre": metadata.get("name") or metadata.get("full_name") or metadata.get("nombres"),
+        })
+
+    return usuarios
+
 class AlertaRequest(BaseModel):
     tipo_reporte: str
     descripcion: Optional[str] = None
@@ -171,6 +197,10 @@ async def editar_estado_alerta(alerta_id: int, req: EstadoAtencionRequest):
         return {"message": "Estado de atencion actualizado exitosamente"}
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+@app.get("/usuarios")
+async def listar_usuarios():
+    return await run_in_threadpool(consultar_usuarios)
 
 @app.websocket("/ws/alertas")
 async def websocket_alertas(websocket: WebSocket):
