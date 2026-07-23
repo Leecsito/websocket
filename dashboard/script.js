@@ -186,7 +186,6 @@ function applyFilters() {
 function renderDashboard() {
     document.getElementById('filterCount').textContent = filteredReports.length + ' reportes';
     updateKpis();
-    renderInsights();
     renderTrendChart();
     renderHourlyChart();
     renderDonutChart();
@@ -213,50 +212,6 @@ function updateKpis() {
     document.getElementById('kpiAccidente').textContent = filteredReports.filter(function(r) { return normalizeType(r.tipo_reporte) === 'accidente'; }).length;
     document.getElementById('kpiMedica').textContent = filteredReports.filter(function(r) { return normalizeType(r.tipo_reporte) === 'medica'; }).length;
     document.getElementById('kpiActiveUsers').textContent = Object.keys(cedulas).length;
-}
-
-function renderInsights() {
-    var list = document.getElementById('insightsList');
-    var total = filteredReports.length;
-
-    if (!total) {
-        list.innerHTML = '<li>No hay datos con los filtros actuales. Ajusta el rango o espera nuevos reportes.</li>';
-        return;
-    }
-
-    var insights = [];
-    var typeCounts = { asalto: 0, accidente: 0, medica: 0, otro: 0 };
-    var hourCounts = new Array(24).fill(0);
-    var pending = 0;
-    var geo = 0;
-
-    filteredReports.forEach(function(r) {
-        typeCounts[normalizeType(r.tipo_reporte)]++;
-        if ((r.estado_atencion || 'pendiente') === 'pendiente') pending++;
-        if (hasCoords(r)) geo++;
-        var d = parseDate(r.fecha_hora);
-        if (d) hourCounts[d.getHours()]++;
-    });
-
-    var dominant = Object.keys(typeCounts).sort(function(a, b) { return typeCounts[b] - typeCounts[a]; })[0];
-    insights.push('<strong>' + pct(typeCounts[dominant], total) + '%</strong> de los reportes son ' + typeLabel(dominant).toLowerCase() + ' (' + typeCounts[dominant] + ' de ' + total + ').');
-
-    var peakHour = hourCounts.indexOf(Math.max.apply(null, hourCounts));
-    if (hourCounts[peakHour] > 0) {
-        insights.push('La franja más crítica es las <strong>' + String(peakHour).padStart(2, '0') + ':00</strong> con ' + hourCounts[peakHour] + ' incidente(s). Considera reforzar recursos en ese horario.');
-    }
-
-    if (pending > 0) {
-        insights.push('Hay <strong>' + pending + ' reportes pendientes</strong> (' + pct(pending, total) + '%). Prioriza atención operativa antes de cerrar casos nuevos.');
-    }
-
-    if (geo < total) {
-        insights.push('<strong>' + (total - geo) + ' reportes</strong> no tienen coordenadas válidas. Mejora la calidad del dato geográfico para análisis más precisos.');
-    } else if (geo === total && total > 0) {
-        insights.push('Todos los reportes filtrados están <strong>georreferenciados</strong>. Puedes confiar en el análisis espacial complementario.');
-    }
-
-    list.innerHTML = insights.map(function(text) { return '<li>' + text + '</li>'; }).join('');
 }
 
 function renderBarChart(containerId, rows) {

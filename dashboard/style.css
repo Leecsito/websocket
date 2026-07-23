@@ -141,40 +141,6 @@ button, input, select { font: inherit; }
 .kpi-icon.medical { background: #ede9fe; color: var(--violet); }
 .kpi-icon.users { background: #e0f2fe; color: #0284c7; }
 
-.insights-panel {
-    padding: 18px 20px;
-    margin-bottom: 16px;
-    background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
-    border: 1px solid #bfdbfe;
-    border-radius: 8px;
-}
-
-.insights-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.insights-header i { color: var(--amber); }
-.insights-header h2 {
-    margin: 0;
-    font-size: 0.95rem;
-}
-
-.insights-list {
-    margin: 0;
-    padding-left: 20px;
-    color: var(--text-main);
-}
-
-.insights-list li {
-    margin: 6px 0;
-    line-height: 1.45;
-}
-
-.insights-list li strong { color: var(--blue); }
-
 .filters-bar {
     padding: 16px;
     margin-bottom: 16px;
@@ -290,9 +256,10 @@ button, input, select { font: inherit; }
 
 .charts-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
     gap: 16px;
     margin-bottom: 16px;
+    align-items: start;
 }
 
 .chart-panel {
@@ -302,8 +269,6 @@ button, input, select { font: inherit; }
     border-radius: 8px;
     box-shadow: var(--shadow);
 }
-
-.chart-wide { grid-column: span 2; }
 
 .chart-head {
     display: flex;
@@ -608,7 +573,6 @@ button, input, select { font: inherit; }
     .kpi-grid { grid-template-columns: repeat(3, 1fr); }
     .filters-grid { grid-template-columns: repeat(3, 1fr); }
     .charts-grid { grid-template-columns: 1fr; }
-    .chart-wide { grid-column: span 1; }
     .bottom-row { grid-template-columns: 1fr; }
 }
 
