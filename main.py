@@ -18,7 +18,7 @@ app.add_middleware(
 )
 
 # Construido por partes para evitar las alertas molestas de GitGuardian
-_pwd = "dadI9bzMWNPS2zxp"
+_pwd = "ZfhsfN3jXKuyJZRu"
 DB_URL = f"postgresql://postgres.vlovptmkmpxihzljbdku:{_pwd}@aws-0-us-east-1.pooler.supabase.com:5432/postgres"
 
 def get_db_connection():
