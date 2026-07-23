@@ -68,26 +68,48 @@ function applySearch() {
     renderUsuarios();
 }
 
-function loadUsuarios() {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-cell">Cargando usuarios...</td></tr>';
-    fetch(API_URL + '/usuarios', { cache: 'no-store' })
-        .then(function(response) {
-            if (!response.ok) throw new Error('Error HTTP ' + response.status);
-            return response.json();
-        })
-        .then(function(data) {
+var socket = null;
+var reconnectDelay = 3000;
+
+function connectWebSocket() {
+    if (!usuarios.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-cell">Cargando usuarios...</td></tr>';
+    }
+    
+    if (socket) {
+        socket.onclose = null; // Prevent reconnect loop if we force close
+        socket.close();
+    }
+    
+    socket = new WebSocket(WS_URL + '/ws/usuarios');
+
+    socket.onopen = function() {
+        reconnectDelay = 3000;
+    };
+
+    socket.onmessage = function(event) {
+        try {
+            var data = JSON.parse(event.data);
             usuarios = Array.isArray(data) ? data : [];
-            filteredUsuarios = usuarios.slice();
             applySearch();
-        })
-        .catch(function(error) {
-            console.error('Error cargando usuarios:', error);
+        } catch (error) {
+            console.error('Error procesando usuarios:', error);
             totalUsers.textContent = '0';
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-cell">No se pudieron cargar los usuarios.</td></tr>';
-        });
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-cell">Error en los datos de usuarios.</td></tr>';
+        }
+    };
+
+    socket.onclose = function() {
+        setTimeout(connectWebSocket, reconnectDelay);
+        reconnectDelay = Math.min(reconnectDelay + 2000, 15000);
+    };
+
+    socket.onerror = function() {
+        socket.close();
+    };
 }
 
 searchInput.addEventListener('input', applySearch);
-btnReload.addEventListener('click', loadUsuarios);
+btnReload.addEventListener('click', connectWebSocket);
 
-loadUsuarios();
+connectWebSocket();

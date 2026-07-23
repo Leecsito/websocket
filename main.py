@@ -202,6 +202,24 @@ async def editar_estado_alerta(alerta_id: int, req: EstadoAtencionRequest):
 async def listar_usuarios():
     return await run_in_threadpool(consultar_usuarios)
 
+@app.websocket("/ws/usuarios")
+async def websocket_usuarios(websocket: WebSocket):
+    await websocket.accept()
+    fail_delay = 0
+    try:
+        while True:
+            try:
+                datos = await run_in_threadpool(consultar_usuarios)
+                fail_delay = 0
+                await websocket.send_json(datos)
+                await asyncio.sleep(5)
+            except Exception as e:
+                print(f"Error consultando usuarios: {e}")
+                fail_delay = min(fail_delay + 10, 60)
+                await asyncio.sleep(fail_delay)
+    except (WebSocketDisconnect, RuntimeError):
+        pass
+
 @app.websocket("/ws/alertas")
 async def websocket_alertas(websocket: WebSocket):
     await websocket.accept()
