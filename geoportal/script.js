@@ -141,6 +141,33 @@ function conectarWebSocket() {
     };
 }
 
+function getIconForType(tipo) {
+    let iconClass = 'fa-solid fa-bell';
+    let bgClass = 'icon-default';
+    let t = tipo.toLowerCase();
+    
+    if (t.includes('robo') || t.includes('asalto') || t.includes('sospechoso')) {
+        iconClass = 'fa-solid fa-person-rifle';
+        bgClass = 'icon-robo';
+    } else if (t.includes('accidente') || t.includes('choque')) {
+        iconClass = 'fa-solid fa-car-burst';
+        bgClass = 'icon-accidente';
+    } else if (t.includes('medica') || t.includes('salud') || t.includes('médica')) {
+        iconClass = 'fa-solid fa-truck-medical';
+        bgClass = 'icon-medico';
+    } else if (t.includes('incendio')) {
+        iconClass = 'fa-solid fa-fire';
+        bgClass = 'icon-robo';
+    }
+
+    return L.divIcon({
+        html: `<div class="custom-map-icon ${bgClass}" style="width:100%; height:100%;"><i class="${iconClass}"></i></div>`,
+        className: '',
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+    });
+}
+
 // Función para renderizar los puntos en el mapa y la tabla
 function renderEvents(events) {
     markersLayer.clearLayers();
@@ -150,13 +177,8 @@ function renderEvents(events) {
     document.getElementById('activeEvents').textContent = events.length;
 
     events.forEach(ev => {
-        const marker = L.circleMarker([ev.lat, ev.lng], {
-            radius: 8,
-            fillColor: ev.tipo.toLowerCase().includes('robo') || ev.tipo.toLowerCase().includes('asalto') ? '#ef4444' : '#f59e0b',
-            color: '#fff',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8
+        const marker = L.marker([ev.lat, ev.lng], {
+            icon: getIconForType(ev.tipo)
         });
 
         const popupContent = `
@@ -208,7 +230,10 @@ function aplicarFiltros() {
     renderEvents(filteredEvents);
 }
 
-document.getElementById('btnApplyFilters').addEventListener('click', aplicarFiltros);
+['filterGender', 'filterDate', 'filterTime', 'filterAgeMin', 'filterAgeMax'].forEach(id => {
+    document.getElementById(id).addEventListener('change', aplicarFiltros);
+    document.getElementById(id).addEventListener('input', aplicarFiltros);
+});
 
 // Limpiar filtros
 document.getElementById('btnClearFilters').addEventListener('click', () => {

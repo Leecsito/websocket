@@ -27,11 +27,10 @@ body {
 /* Layout Grid */
 .dashboard-container {
     display: grid;
-    grid-template-columns: 280px 1fr;
-    grid-template-rows: 1fr 250px;
+    grid-template-columns: 280px 1fr 350px;
+    grid-template-rows: 1fr;
     grid-template-areas:
-        "sidebar map"
-        "sidebar table";
+        "sidebar map table";
     height: calc(100vh - 72px);
     margin-top: 0;
 }
@@ -164,11 +163,11 @@ body {
     height: 100%;
 }
 
-/* Tabla inferior */
+/* Tabla lateral derecha */
 .log-panel {
     grid-area: table;
     background-color: var(--bg-panel);
-    border-top: 1px solid var(--border);
+    border-left: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     z-index: 10;
@@ -252,3 +251,19 @@ td {
     margin-bottom: 5px;
     padding-bottom: 3px;
 }
+
+/* Iconos del mapa personalizados */
+.custom-map-icon {
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    border: 2px solid white;
+}
+.icon-robo { background-color: var(--danger); }
+.icon-accidente { background-color: #f59e0b; }
+.icon-medico { background-color: var(--primary); }
+.icon-default { background-color: #8b5cf6; }
