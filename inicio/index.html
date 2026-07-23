@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoPortal - Inicio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Header Styles -->
+    <link rel="stylesheet" href="../header/styles.css">
+    <!-- Footer Styles -->
+    <link rel="stylesheet" href="../footer/styles.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header Placeholder -->
+    <div id="header-placeholder"></div>
+    <script>
+        // Cargar el componente header dinámicamente
+        fetch('../header/index.html')
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data, 'text/html');
+                const header = doc.querySelector('header');
+                if(header) {
+                    document.getElementById('header-placeholder').replaceWith(header);
+                    // Avisar al script del header que el DOM se ha actualizado
+                    document.dispatchEvent(new Event('headerLoaded'));
+                }
+            })
+            .catch(err => console.error("Error cargando el header:", err));
+    </script>
+
+    <section id="inicio" class="hero-section">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="pulse-dot"></span>
+                    Plataforma Ciudadana MegaGeoSecurity
+                </div>
+
+                <h1 class="hero-title">
+                    Protegiendo <span>Riobamba</span> en tiempo real
+                </h1>
+
+                <p class="hero-description">
+                    Tu seguridad es nuestra prioridad. Mantente informado sobre lo que ocurre en tu sector a través de
+                    nuestro mapa urbano en vivo. Reporta robos, accidentes o emergencias médicas con precisión exacta
+                    para una respuesta inmediata de las autoridades.
+                </p>
+
+                <div class="hero-actions">
+                    <a href="#mapa" class="btn btn-primary">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        Abrir Mapa Urbano
+                    </a>
+                    <a href="#como-funciona" class="btn btn-secondary">
+                        Conoce el Sistema
+                    </a>
+                </div>
+
+                <div class="hero-impact">
+                    <div class="impact-item">
+                        <i class="fa-solid fa-satellite-dish"></i>
+                        <span>Conexión en Vivo</span>
+                    </div>
+                    <div class="impact-item">
+                        <i class="fa-solid fa-crosshairs"></i>
+                        <span>Ubicación Exacta</span>
+                    </div>
+                    <div class="impact-item">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>Comunidad Segura</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-visuals">
+                <div class="carousel-wrapper">
+                    <div class="carousel-slides">
+                        <img src="../multimedia/carusel/Vista_del_Volcán_Chimborazo_desde_Riobamba.jpg" alt="Chimborazo" class="carousel-img active">
+                        <img src="../multimedia/carusel/riobamba-centro-1-1536x864.jpg" alt="Centro Riobamba" class="carousel-img">
+                        <img src="../multimedia/carusel/Riobamba-Cathedral.jpg" alt="Catedral de Riobamba" class="carousel-img">
+                        <img src="../multimedia/carusel/Sucre-Park.jpg" alt="Parque Sucre" class="carousel-img">
+                        <img src="../multimedia/carusel/Vista_aérea_de_Riobamba.jpg" alt="Vista Aérea Riobamba" class="carousel-img">
+                    </div>
+                    <div class="carousel-indicators">
+                        <span class="indicator active" data-slide="0"></span>
+                        <span class="indicator" data-slide="1"></span>
+                        <span class="indicator" data-slide="2"></span>
+                        <span class="indicator" data-slide="3"></span>
+                        <span class="indicator" data-slide="4"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Placeholder -->
+    <div id="footer-placeholder"></div>
+    <script>
+        // Cargar el componente footer dinámicamente
+        fetch('../footer/index.html')
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data, 'text/html');
+                const footer = doc.querySelector('footer');
+                if(footer) {
+                    document.getElementById('footer-placeholder').replaceWith(footer);
+                    document.dispatchEvent(new Event('footerLoaded'));
+                }
+            })
+            .catch(err => console.error("Error cargando el footer:", err));
+    </script>
+
+    <script src="script.js"></script>
+    <script src="../header/script.js"></script>
+    <script src="../footer/script.js"></script>
+</body>
+
+</html>

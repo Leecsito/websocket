@@ -3,27 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SICOA - Centro de Monitoreo Riobamba</title>
+    <title>MegaGeo Security - Mapa y Alertas</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../header/styles.css">
+    <link rel="stylesheet" href="../footer/styles.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="header-placeholder"></div>
+    <script>
+        fetch('../header/index.html')
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data, 'text/html');
+                const header = doc.querySelector('header');
+                if(header) {
+                    const links = header.querySelectorAll('.main-nav a');
+                    links.forEach(link => link.classList.remove('active'));
+                    const mapLink = Array.from(links).find(l => l.textContent.includes('Mapa'));
+                    if(mapLink) mapLink.classList.add('active');
+                    
+                    document.getElementById('header-placeholder').replaceWith(header);
+                    document.dispatchEvent(new Event('headerLoaded'));
+                }
+            });
+    </script>
     <div class="dashboard-container">
-        <!-- Header -->
-        <header class="top-header">
-            <div class="header-title">
-                <span class="status-indicator live"></span>
-                <div>
-                    <h1>SICOA - Centro de Monitoreo</h1>
-                    <p>Riobamba | Recepción de Alertas en Tiempo Real</p>
-                </div>
-            </div>
-            <div class="connection-status offline" id="connectionBadge">
-                Sin conexión
-            </div>
-        </header>
-
         <!-- Sidebar (Filtros) -->
         <aside class="sidebar">
             <div class="filter-section">
@@ -62,6 +70,10 @@
             </div>
 
             <div class="events-counter">
+                <h3>ESTADO DEL SISTEMA</h3>
+                <div class="connection-status offline" id="connectionBadge" style="margin-bottom: 15px; display: inline-block;">
+                    Sin conexión
+                </div>
                 <h3>EVENTOS ACTIVOS</h3>
                 <div class="counter-number" id="activeEvents">0</div>
             </div>
@@ -98,9 +110,26 @@
         </footer>
     </div>
 
+    <div id="footer-placeholder"></div>
+    <script>
+        fetch('../footer/index.html')
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data, 'text/html');
+                const footer = doc.querySelector('footer');
+                if(footer) {
+                    document.getElementById('footer-placeholder').replaceWith(footer);
+                    document.dispatchEvent(new Event('footerLoaded'));
+                }
+            });
+    </script>
+
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="../config.js"></script>
     <script src="script.js"></script>
+    <script src="../header/script.js"></script>
+    <script src="../footer/script.js"></script>
 </body>
 </html>

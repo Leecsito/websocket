@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoPortal Footer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <footer class="sicoa-footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <!-- Columna 1: Marca y Descripción -->
+                <div class="footer-brand">
+                    <h3>MegaGeo <span>Security</span></h3>
+                    <p>
+                        Sistema de control y visualización de alertas urbanas para la ciudad de Riobamba.
+                    </p>
+                    <div class="tech-stack">
+                        <span title="PostGIS & PostgreSQL"><i class="fa-solid fa-database"></i></span>
+                        <span title="FastAPI Backend"><i class="fa-solid fa-server"></i></span>
+                        <span title="Leaflet Maps"><i class="fa-solid fa-map"></i></span>
+                    </div>
+                </div>
+
+                <!-- Columna 2: Equipo de Desarrollo -->
+                <div class="footer-team">
+                    <h4>Desarrolladores</h4>
+                    <ul>
+                        <li>Astor Adrian Brito Haro</li>
+                        <li>Alan Fabian Verdezoto Rodriguez</li>
+                        <li>Javier Marcelo Luna González</li>
+                        <li>Juan Carlos Tapia Gavidia</li>
+                        <li>Luis Teodoro Yamba Yamba</li>
+                    </ul>
+                </div>
+
+                <!-- Columna 3: Enlaces Rápidos -->
+                <div class="footer-links">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="#inicio"><i class="fa-solid fa-chevron-right"></i> Inicio</a></li>
+                        <li><a href="#mapa"><i class="fa-solid fa-chevron-right"></i> Mapa Urbano</a></li>
+                        <li><a href="#alertas"><i class="fa-solid fa-chevron-right"></i> Historial de Alertas</a></li>
+                    </ul>
+                </div>
+
+                <!-- Columna 4: Contacto e Información -->
+                <div class="footer-contact">
+                    <h4>Atención al Ciudadano</h4>
+                    <ul>
+                        <li>
+                            <i class="fa-solid fa-location-dot"></i>
+                            <span>Riobamba, Ecuador</span>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-envelope"></i>
+                            <a href="mailto:soporte@sicoa.gob.ec">soporte@sicoa.gob.ec</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra Inferior -->
+        <div class="footer-bottom">
+            <div class="footer-container bottom-flex">
+                <p>&copy; <span id="current-year"></span> Proyecto SICOA. Todos los derechos reservados.</p>
+                <div class="legal-links">
+                    <a href="#privacidad">Políticas de Privacidad</a>
+                    <span class="separator">|</span>
+                    <a href="#terminos">Términos de Uso</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+
+</html>
