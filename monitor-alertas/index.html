@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MegaGeo Security - Monitor de Alertas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../header/styles.css">
+    <link rel="stylesheet" href="../footer/styles.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <script>
+        fetch('../header/index.html')
+            .then(function(response) { return response.text(); })
+            .then(function(data) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(data, 'text/html');
+                var header = doc.querySelector('header');
+                if (header) {
+                    var links = header.querySelectorAll('.main-nav a');
+                    links.forEach(function(link) { link.classList.remove('active'); });
+                    var monitorLink = Array.from(links).find(function(link) {
+                        return link.textContent.indexOf('Monitor') !== -1;
+                    });
+                    if (monitorLink) monitorLink.classList.add('active');
+                    document.getElementById('header-placeholder').replaceWith(header);
+                    document.dispatchEvent(new Event('headerLoaded'));
+                }
+            });
+    </script>
+
+    <main class="monitor-shell">
+        <section class="monitor-topbar" aria-label="Resumen del monitor">
+            <div>
+                <p class="eyebrow">Centro de monitoreo</p>
+                <h1>Monitor de Alertas</h1>
+                <p class="topbar-copy">Seguimiento operativo en tiempo real para priorizar, ubicar y atender reportes ciudadanos.</p>
+            </div>
+            <div class="connection-card">
+                <div class="connection-dot" id="connectionDot"></div>
+                <div>
+                    <span id="connectionText">Conectando</span>
+                    <small id="lastUpdate">Sin datos recibidos</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="kpi-grid" aria-label="Indicadores principales">
+            <article class="kpi-card">
+                <span class="kpi-icon critical"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                <div>
+                    <p>Criticas</p>
+                    <strong id="kpiCritical">0</strong>
+                </div>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-icon warning"><i class="fa-solid fa-clock"></i></span>
+                <div>
+                    <p>Ultima hora</p>
+                    <strong id="kpiLastHour">0</strong>
+                </div>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-icon located"><i class="fa-solid fa-location-dot"></i></span>
+                <div>
+                    <p>Geolocalizadas</p>
+                    <strong id="kpiLocated">0</strong>
+                </div>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-icon total"><i class="fa-solid fa-list-check"></i></span>
+                <div>
+                    <p>Total recibido</p>
+                    <strong id="kpiTotal">0</strong>
+                </div>
+            </article>
+        </section>
+
+        <section class="monitor-layout">
+            <aside class="filters-panel" aria-label="Filtros de alertas">
+                <div class="panel-header">
+                    <h2>Filtros</h2>
+                    <button type="button" id="btnResetFilters" class="icon-button" title="Limpiar filtros" aria-label="Limpiar filtros">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                </div>
+
+                <label class="field-label" for="searchInput">Busqueda</label>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input id="searchInput" type="search" placeholder="Nombre, cedula, tipo o telefono">
+                </div>
+
+                <label class="field-label">Prioridad</label>
+                <div class="segmented-control" id="priorityFilter">
+                    <button type="button" class="active" data-value="todos">Todas</button>
+                    <button type="button" data-value="critica">Critica</button>
+                    <button type="button" data-value="alta">Alta</button>
+                    <button type="button" data-value="media">Media</button>
+                </div>
+
+                <label class="field-label">Estado</label>
+                <div class="segmented-control vertical" id="statusFilter">
+                    <button type="button" class="active" data-value="todos">Todas</button>
+                    <button type="button" data-value="pendiente">Pendiente</button>
+                    <button type="button" data-value="atencion">En atencion</button>
+                    <button type="button" data-value="cerrado">Cerradas</button>
+                </div>
+
+                <label class="field-label" for="typeSelect">Tipo de alerta</label>
+                <select id="typeSelect">
+                    <option value="todos">Todos los tipos</option>
+                </select>
+
+                <label class="field-label" for="dateInput">Fecha</label>
+                <input id="dateInput" type="date">
+
+                <div class="monitor-note">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <p>Los estados de atencion se guardan localmente hasta que el backend tenga flujo de despacho.</p>
+                </div>
+            </aside>
+
+            <section class="queue-panel" aria-label="Cola de alertas">
+                <div class="panel-header queue-header">
+                    <div>
+                        <h2>Cola de alertas</h2>
+                        <p id="queueCount">0 alertas visibles</p>
+                    </div>
+                    <select id="sortSelect" aria-label="Ordenar alertas">
+                        <option value="recientes">Mas recientes</option>
+                        <option value="prioridad">Mayor prioridad</option>
+                        <option value="edad">Edad del afectado</option>
+                    </select>
+                </div>
+
+                <div class="alert-list" id="alertList">
+                    <div class="empty-state">
+                        <i class="fa-regular fa-bell"></i>
+                        <strong>Esperando alertas</strong>
+                        <span>Cuando llegue informacion por WebSocket aparecera aqui.</span>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="detail-panel" aria-label="Detalle de alerta">
+                <div class="panel-header">
+                    <h2>Detalle operativo</h2>
+                    <span class="detail-id" id="detailId">Sin seleccion</span>
+                </div>
+
+                <div class="detail-body" id="detailBody">
+                    <div class="empty-detail">
+                        <i class="fa-solid fa-arrow-pointer"></i>
+                        <p>Selecciona una alerta para ver datos del ciudadano, contacto, ubicacion y acciones de atencion.</p>
+                    </div>
+                </div>
+
+                <div class="mini-map-wrap">
+                    <div id="detailMap"></div>
+                </div>
+            </aside>
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+    <script>
+        fetch('../footer/index.html')
+            .then(function(response) { return response.text(); })
+            .then(function(data) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(data, 'text/html');
+                var footer = doc.querySelector('footer');
+                if (footer) {
+                    document.getElementById('footer-placeholder').replaceWith(footer);
+                    document.dispatchEvent(new Event('footerLoaded'));
+                }
+            });
+    </script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../config.js"></script>
+    <script src="script.js"></script>
+    <script src="../header/script.js"></script>
+    <script src="../footer/script.js"></script>
+</body>
+</html>
