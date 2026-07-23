@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MegaGeo Security - Dashboard Analítico</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../header/styles.css">
+    <link rel="stylesheet" href="../footer/styles.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <script>
+        fetch('../header/index.html')
+            .then(function(response) { return response.text(); })
+            .then(function(data) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(data, 'text/html');
+                var header = doc.querySelector('header');
+                if (header) {
+                    var links = header.querySelectorAll('.main-nav a');
+                    links.forEach(function(link) { link.classList.remove('active'); });
+                    var dashLink = Array.from(links).find(function(link) {
+                        return link.textContent.indexOf('Dashboard') !== -1;
+                    });
+                    if (dashLink) dashLink.classList.add('active');
+                    document.getElementById('header-placeholder').replaceWith(header);
+                    document.dispatchEvent(new Event('headerLoaded'));
+                }
+            });
+    </script>
+
+    <main class="dash-shell">
+        <section class="dash-topbar">
+            <div>
+                <p class="eyebrow">Análisis geoespacial</p>
+                <h1>Dashboard</h1>
+                <p class="topbar-copy">Panel de inteligencia para analizar reportes de emergencia, patrones de ubicación y actividad ciudadana en Riobamba.</p>
+            </div>
+            <div class="topbar-actions">
+                <div class="connection-card">
+                    <div class="connection-dot" id="connectionDot"></div>
+                    <div>
+                        <span id="connectionText">Conectando</span>
+                        <small id="lastUpdate">Esperando datos</small>
+                    </div>
+                </div>
+                <button type="button" id="btnResetFilters" class="ghost-button">
+                    <i class="fa-solid fa-rotate-left"></i> Limpiar filtros
+                </button>
+            </div>
+        </section>
+
+        <section class="kpi-grid" aria-label="Indicadores principales">
+            <article class="kpi-card">
+                <span class="kpi-icon total"><i class="fa-solid fa-layer-group"></i></span>
+                <div>
+                    <p>Reportes filtrados</p>
+                    <strong id="kpiFiltered">0</strong>
+                </div>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-icon located"><i class="fa-solid fa-location-crosshairs"></i></span>
+                <div>
+                    <p>Georreferenciados</p>
+                    <strong id="kpiGeo">0</strong>
+                </div>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-icon critical"><i class="fa-solid fa-person-rifle"></i></span>
+                <div>
+                    <p>Asaltos</p>
+                    <strong id="kpiAsalto">0</strong>
+                </div>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-icon warning"><i class="fa-solid fa-car-burst"></i></span>
+                <div>
+                    <p>Accidentes</p>
+                    <strong id="kpiAccidente">0</strong>
+                </div>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-icon medical"><i class="fa-solid fa-truck-medical"></i></span>
+                <div>
+                    <p>Emerg. médica</p>
+                    <strong id="kpiMedica">0</strong>
+                </div>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-icon users"><i class="fa-solid fa-users"></i></span>
+                <div>
+                    <p>Usuarios registrados</p>
+                    <strong id="kpiUsers">0</strong>
+                </div>
+            </article>
+        </section>
+
+        <section class="dash-layout">
+            <aside class="filters-panel" aria-label="Filtros estratégicos">
+                <div class="panel-header">
+                    <h2>Filtros</h2>
+                    <span class="filter-count" id="filterCount">0 resultados</span>
+                </div>
+
+                <label class="field-label" for="searchInput">Búsqueda</label>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input id="searchInput" type="search" placeholder="Nombre, cédula, tipo o descripción">
+                </div>
+
+                <label class="field-label">Tipo de alerta</label>
+                <div class="pill-group" id="typePills">
+                    <button type="button" class="pill active" data-value="todos">Todos</button>
+                    <button type="button" class="pill" data-value="asalto">Asalto</button>
+                    <button type="button" class="pill" data-value="accidente">Accidente</button>
+                    <button type="button" class="pill" data-value="medica">Emerg. médica</button>
+                </div>
+
+                <label class="field-label">Género</label>
+                <div class="pill-group" id="genderPills">
+                    <button type="button" class="pill active" data-value="todos">Todos</button>
+                    <button type="button" class="pill" data-value="Masculino">Masculino</button>
+                    <button type="button" class="pill" data-value="Femenino">Femenino</button>
+                </div>
+
+                <label class="field-label">Estado de atención</label>
+                <select id="statusSelect">
+                    <option value="todos">Todos</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_atencion">En atención</option>
+                    <option value="cerrada">Cerrada</option>
+                </select>
+
+                <label class="field-label" for="userSelect">Usuario (cédula)</label>
+                <select id="userSelect">
+                    <option value="todos">Todos los usuarios</option>
+                </select>
+
+                <div class="field-row">
+                    <div>
+                        <label class="field-label" for="dateFrom">Desde</label>
+                        <input id="dateFrom" type="date">
+                    </div>
+                    <div>
+                        <label class="field-label" for="dateTo">Hasta</label>
+                        <input id="dateTo" type="date">
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div>
+                        <label class="field-label" for="ageMin">Edad mín.</label>
+                        <input id="ageMin" type="number" min="0" max="120" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="field-label" for="ageMax">Edad máx.</label>
+                        <input id="ageMax" type="number" min="0" max="120" placeholder="120">
+                    </div>
+                </div>
+
+                <label class="field-label">Rango horario</label>
+                <div class="time-range">
+                    <span id="timeMinLabel">00:00</span>
+                    <span id="timeMaxLabel">23:59</span>
+                </div>
+                <div id="timeSlider"></div>
+
+                <label class="field-label">Visualización del mapa</label>
+                <div class="segmented-control" id="mapModeControl">
+                    <button type="button" class="active" data-value="markers">Marcadores</button>
+                    <button type="button" data-value="heat">Mapa de calor</button>
+                </div>
+            </aside>
+
+            <section class="map-panel" aria-label="Mapa de análisis">
+                <div class="panel-header map-header">
+                    <div>
+                        <h2>Mapa de incidentes</h2>
+                        <p id="mapSummary">Sin puntos para mostrar</p>
+                    </div>
+                    <button type="button" id="btnFitBounds" class="ghost-button" title="Ajustar vista">
+                        <i class="fa-solid fa-expand"></i> Ajustar vista
+                    </button>
+                </div>
+                <div id="analysisMap"></div>
+            </section>
+
+            <aside class="analytics-panel" aria-label="Análisis estadístico">
+                <div class="panel-header">
+                    <h2>Distribución</h2>
+                </div>
+
+                <article class="chart-card">
+                    <h3>Por tipo de alerta</h3>
+                    <div class="bar-chart" id="chartType"></div>
+                </article>
+
+                <article class="chart-card">
+                    <h3>Por franja horaria</h3>
+                    <div class="bar-chart" id="chartHour"></div>
+                </article>
+
+                <article class="chart-card">
+                    <h3>Por estado de atención</h3>
+                    <div class="bar-chart" id="chartStatus"></div>
+                </article>
+
+                <article class="chart-card hotspots">
+                    <h3>Zonas con más reportes</h3>
+                    <ul class="hotspot-list" id="hotspotList">
+                        <li class="empty-hotspot">Aplica filtros para ver concentraciones</li>
+                    </ul>
+                </article>
+            </aside>
+        </section>
+
+        <section class="table-panel" aria-label="Detalle de reportes">
+            <div class="panel-header">
+                <div>
+                    <h2>Detalle de reportes</h2>
+                    <p id="tableCount">0 registros visibles</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Ciudadano</th>
+                            <th>Edad</th>
+                            <th>Estado</th>
+                            <th>Coordenadas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                        <tr>
+                            <td colspan="7" class="empty-cell">Cargando reportes...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+    <script>
+        fetch('../footer/index.html')
+            .then(function(response) { return response.text(); })
+            .then(function(data) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(data, 'text/html');
+                var footer = doc.querySelector('footer');
+                if (footer) {
+                    document.getElementById('footer-placeholder').replaceWith(footer);
+                    document.dispatchEvent(new Event('footerLoaded'));
+                }
+            });
+    </script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
+    <script src="../config.js"></script>
+    <script src="script.js"></script>
+    <script src="../header/script.js"></script>
+    <script src="../footer/script.js"></script>
+</body>
+</html>
