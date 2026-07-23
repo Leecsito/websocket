@@ -2,7 +2,6 @@ var monitorState = {
     alerts: [],
     filtered: [],
     selectedId: null,
-    statuses: loadStatuses(),
     filters: {
         search: '',
         priority: 'todos',
@@ -38,18 +37,6 @@ var els = {
     btnResetFilters: document.getElementById('btnResetFilters')
 };
 
-function loadStatuses() {
-    try {
-        return JSON.parse(localStorage.getItem('monitorAlertasStatuses') || '{}');
-    } catch (error) {
-        return {};
-    }
-}
-
-function saveStatuses() {
-    localStorage.setItem('monitorAlertasStatuses', JSON.stringify(monitorState.statuses));
-}
-
 function escapeHtml(value) {
     return String(value == null ? '' : value)
         .replace(/&/g, '&amp;')
@@ -57,6 +44,13 @@ function escapeHtml(value) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+}
+
+function normalizeText(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
 }
 
 function parseDate(value) {
@@ -91,36 +85,27 @@ function minutesAgo(value) {
 }
 
 function getTypeMeta(type) {
-    var text = String(type || '').toLowerCase();
-    if (text.indexOf('robo') !== -1 || text.indexOf('asalto') !== -1 || text.indexOf('sospechoso') !== -1) {
-        return { icon: 'fa-solid fa-person-rifle', cls: 'robo' };
+    var text = normalizeText(type);
+    if (text.indexOf('asalto') !== -1) {
+        return { icon: 'fa-solid fa-person-rifle', cls: 'asalto' };
     }
-    if (text.indexOf('accidente') !== -1 || text.indexOf('choque') !== -1) {
+    if (text.indexOf('accidente') !== -1) {
         return { icon: 'fa-solid fa-car-burst', cls: 'accidente' };
     }
-    if (text.indexOf('medica') !== -1 || text.indexOf('medica') !== -1 || text.indexOf('salud') !== -1 || text.indexOf('emergencia') !== -1) {
+    if (text.indexOf('emergencia medica') !== -1 || text.indexOf('medica') !== -1) {
         return { icon: 'fa-solid fa-truck-medical', cls: 'medica' };
-    }
-    if (text.indexOf('incendio') !== -1 || text.indexOf('fuego') !== -1) {
-        return { icon: 'fa-solid fa-fire', cls: 'incendio' };
     }
     return { icon: 'fa-solid fa-bell', cls: 'default' };
 }
 
 function getPriority(alert) {
-    var type = String(alert.tipo || '').toLowerCase();
-    var age = Number(alert.edad || 0);
-    var date = parseDate(alert.fecha_hora);
-    var minutes = date ? (Date.now() - date.getTime()) / 60000 : 9999;
+    var type = normalizeText(alert.tipo);
 
-    if (type.indexOf('incendio') !== -1 || type.indexOf('arma') !== -1 || type.indexOf('medica') !== -1 || type.indexOf('emergencia') !== -1) {
+    if (type.indexOf('emergencia medica') !== -1 || type.indexOf('medica') !== -1) {
         return { key: 'critica', label: 'Critica', score: 4 };
     }
-    if (type.indexOf('robo') !== -1 || type.indexOf('asalto') !== -1 || type.indexOf('accidente') !== -1 || age >= 65) {
+    if (type.indexOf('asalto') !== -1 || type.indexOf('accidente') !== -1) {
         return { key: 'alta', label: 'Alta', score: 3 };
-    }
-    if (minutes <= 60) {
-        return { key: 'media', label: 'Media', score: 2 };
     }
     return { key: 'baja', label: 'Baja', score: 1 };
 }
@@ -146,13 +131,10 @@ function normalizeAlert(item) {
         fecha_nacimiento: item.fecha_nacimiento || '',
         edad: item.edad == null ? 'N/A' : item.edad,
         contacto: item.celular_contacto_emergencia || item.contacto_emergencia || 'No registrado',
+        estado_atencion: item.estado_atencion || 'pendiente',
         latitud: isNaN(lat) ? null : lat,
         longitud: isNaN(lng) ? null : lng
     };
-}
-
-function getAlertStatus(id) {
-    return monitorState.statuses[id] || 'pendiente';
 }
 
 function setConnection(status) {
@@ -201,7 +183,7 @@ function applyFilters() {
     var search = monitorState.filters.search.trim().toLowerCase();
     var filtered = monitorState.alerts.filter(function(alert) {
         var priority = getPriority(alert);
-        var status = getAlertStatus(alert.id);
+        var status = alert.estado_atencion || 'pendiente';
         var haystack = [
             alert.tipo,
             alert.descripcion,
@@ -209,7 +191,8 @@ function applyFilters() {
             alert.cedula,
             alert.celular,
             alert.contacto,
-            alert.genero
+            alert.genero,
+            labelStatus(alert.estado_atencion)
         ].join(' ').toLowerCase();
         var date = parseDate(alert.fecha_hora);
         var dateValue = date ? date.toISOString().slice(0, 10) : '';
@@ -257,7 +240,7 @@ function renderList() {
 
     els.alertList.innerHTML = monitorState.filtered.map(function(alert) {
         var priority = getPriority(alert);
-        var status = getAlertStatus(alert.id);
+        var status = alert.estado_atencion || 'pendiente';
         var typeMeta = getTypeMeta(alert.tipo);
         var activeClass = alert.id === monitorState.selectedId ? ' active' : '';
         var locationText = alert.latitud != null && alert.longitud != null ? 'Con ubicacion' : 'Sin ubicacion';
@@ -301,7 +284,7 @@ function renderDetail() {
     }
 
     var priority = getPriority(alert);
-    var status = getAlertStatus(alert.id);
+    var status = alert.estado_atencion || 'pendiente';
     els.detailId.textContent = 'ID #' + alert.id;
 
     els.detailBody.innerHTML =
@@ -325,8 +308,8 @@ function renderDetail() {
         '</div>' +
         '<div class="action-row">' +
             actionButton('pendiente', status) +
-            actionButton('atencion', status) +
-            actionButton('cerrado', status) +
+            actionButton('en_atencion', status) +
+            actionButton('cerrada', status) +
         '</div>';
 
     updateMap(alert);
@@ -341,9 +324,37 @@ function actionButton(value, current) {
 }
 
 function labelStatus(status) {
-    if (status === 'atencion') return 'En atencion';
-    if (status === 'cerrado') return 'Cerrada';
+    if (status === 'en_atencion') return 'En atencion';
+    if (status === 'cerrada') return 'Cerrada';
     return 'Pendiente';
+}
+
+function updateSelectedStatus(estadoAtencion) {
+    var selectedId = monitorState.selectedId;
+    var alert = monitorState.alerts.find(function(item) { return item.id === selectedId; });
+    if (!alert) return;
+
+    var previousStatus = alert.estado_atencion || 'pendiente';
+    alert.estado_atencion = estadoAtencion;
+    applyFilters();
+    renderDetail();
+
+    fetch(API_URL + '/alertas/' + selectedId + '/estado', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado_atencion: estadoAtencion })
+    })
+    .then(function(response) {
+        if (!response.ok) throw new Error('Error HTTP ' + response.status);
+        return response.json();
+    })
+    .catch(function(error) {
+        console.error('No se pudo actualizar el estado de atencion:', error);
+        alert.estado_atencion = previousStatus;
+        applyFilters();
+        renderDetail();
+        window.alert('No se pudo guardar el estado de atencion en la base de datos.');
+    });
 }
 
 function initMap() {
@@ -481,10 +492,7 @@ function bindEvents() {
     els.detailBody.addEventListener('click', function(event) {
         var button = event.target.closest('[data-status-action]');
         if (!button || !monitorState.selectedId) return;
-        monitorState.statuses[monitorState.selectedId] = button.dataset.statusAction;
-        saveStatuses();
-        applyFilters();
-        renderDetail();
+        updateSelectedStatus(button.dataset.statusAction);
     });
 }
 

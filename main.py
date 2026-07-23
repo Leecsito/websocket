@@ -1,7 +1,7 @@
 import asyncio
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -28,10 +28,13 @@ def consultar_alertas():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
-        SELECT id, tipo_reporte, fecha_hora, descripcion, cedula, nombres, apellidos,
-               celular, genero, fecha_nacimiento, edad, celular_contacto_emergencia,
-               latitud, longitud
-        FROM vista_reportes_emergencia ORDER BY id DESC
+        SELECT v.id, v.tipo_reporte, v.fecha_hora, v.descripcion, v.cedula, v.nombres, v.apellidos,
+               v.celular, v.genero, v.fecha_nacimiento, v.edad, v.celular_contacto_emergencia,
+               COALESCE(r.estado_atencion, 'pendiente') AS estado_atencion,
+               v.latitud, v.longitud
+        FROM vista_reportes_emergencia v
+        LEFT JOIN reportes_emergencia r ON r.id = v.id
+        ORDER BY v.id DESC
     """)
     rows = cur.fetchall()
     cur.close()
@@ -55,6 +58,17 @@ class AlertaRequest(BaseModel):
     celular_contacto_emergencia: str
     latitud: Optional[float] = None
     longitud: Optional[float] = None
+    estado_atencion: Optional[str] = "pendiente"
+
+class EstadoAtencionRequest(BaseModel):
+    estado_atencion: str
+
+ESTADOS_ATENCION_VALIDOS = {"pendiente", "en_atencion", "cerrada"}
+
+def validar_estado_atencion(estado: str):
+    if estado not in ESTADOS_ATENCION_VALIDOS:
+        raise ValueError("Estado de atencion no valido")
+    return estado
 
 def insertar_alerta(data: AlertaRequest):
     try:
@@ -70,15 +84,18 @@ def insertar_alerta(data: AlertaRequest):
             INSERT INTO reportes_emergencia (
                 tipo_reporte, descripcion, cedula, nombres, apellidos,
                 celular, genero, fecha_nacimiento, celular_contacto_emergencia,
+                estado_atencion,
                 latitud, longitud, ubicacion
             ) VALUES (
                 %s, %s, %s, %s, %s,
                 %s, %s, %s, %s,
+                %s,
                 %s, %s, {geom_sql}
             )
         """, (
             data.tipo_reporte, data.descripcion, data.cedula, data.nombres, data.apellidos,
             data.celular, data.genero, data.fecha_nacimiento, data.celular_contacto_emergencia,
+            validar_estado_atencion(data.estado_atencion or "pendiente"),
             data.latitud, data.longitud
         ))
         conn.commit()
@@ -103,12 +120,14 @@ def actualizar_alerta(reporte_id: int, data: AlertaRequest):
                 tipo_reporte = %s, descripcion = %s, cedula = %s, nombres = %s, apellidos = %s,
                 celular = %s, genero = %s, fecha_nacimiento = %s,
                 celular_contacto_emergencia = %s,
+                estado_atencion = %s,
                 latitud = %s, longitud = %s, ubicacion = {geom_sql}
             WHERE id = %s
         """, (
             data.tipo_reporte, data.descripcion, data.cedula, data.nombres, data.apellidos,
             data.celular, data.genero, data.fecha_nacimiento,
             data.celular_contacto_emergencia,
+            validar_estado_atencion(data.estado_atencion or "pendiente"),
             data.latitud, data.longitud, reporte_id
         ))
         conn.commit()
@@ -116,6 +135,23 @@ def actualizar_alerta(reporte_id: int, data: AlertaRequest):
         conn.close()
     except Exception as e:
         print(f"Error actualizando alerta: {e}")
+        raise e
+
+def actualizar_estado_atencion(reporte_id: int, estado_atencion: str):
+    estado = validar_estado_atencion(estado_atencion)
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE reportes_emergencia
+            SET estado_atencion = %s
+            WHERE id = %s
+        """, (estado, reporte_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error actualizando estado de atencion: {e}")
         raise e
 
 @app.post("/alertas")
@@ -127,6 +163,14 @@ async def crear_alerta(req: AlertaRequest):
 async def editar_alerta(alerta_id: int, req: AlertaRequest):
     await run_in_threadpool(actualizar_alerta, alerta_id, req)
     return {"message": "Alerta actualizada exitosamente"}
+
+@app.patch("/alertas/{alerta_id}/estado")
+async def editar_estado_alerta(alerta_id: int, req: EstadoAtencionRequest):
+    try:
+        await run_in_threadpool(actualizar_estado_atencion, alerta_id, req.estado_atencion)
+        return {"message": "Estado de atencion actualizado exitosamente"}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 @app.websocket("/ws/alertas")
 async def websocket_alertas(websocket: WebSocket):

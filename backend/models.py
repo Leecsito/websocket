@@ -14,3 +14,8 @@ class AlertaRequest(BaseModel):
     celular_contacto_emergencia: str
     latitud: Optional[float] = None
     longitud: Optional[float] = None
+    estado_atencion: Optional[str] = "pendiente"
+
+
+class EstadoAtencionRequest(BaseModel):
+    estado_atencion: str

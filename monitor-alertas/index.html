@@ -102,15 +102,14 @@
                     <button type="button" class="active" data-value="todos">Todas</button>
                     <button type="button" data-value="critica">Critica</button>
                     <button type="button" data-value="alta">Alta</button>
-                    <button type="button" data-value="media">Media</button>
                 </div>
 
                 <label class="field-label">Estado</label>
                 <div class="segmented-control vertical" id="statusFilter">
                     <button type="button" class="active" data-value="todos">Todas</button>
                     <button type="button" data-value="pendiente">Pendiente</button>
-                    <button type="button" data-value="atencion">En atencion</button>
-                    <button type="button" data-value="cerrado">Cerradas</button>
+                    <button type="button" data-value="en_atencion">En atencion</button>
+                    <button type="button" data-value="cerrada">Cerradas</button>
                 </div>
 
                 <label class="field-label" for="typeSelect">Tipo de alerta</label>
@@ -123,7 +122,7 @@
 
                 <div class="monitor-note">
                     <i class="fa-solid fa-circle-info"></i>
-                    <p>Los estados de atencion se guardan localmente hasta que el backend tenga flujo de despacho.</p>
+                    <p>El estado de atencion se actualiza en la base de datos mediante el backend.</p>
                 </div>
             </aside>
 

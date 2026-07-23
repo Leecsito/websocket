@@ -27,6 +27,7 @@ El proyecto consta de un **Backend en Python (FastAPI)** y múltiples módulos d
 ├── footer/              # Componente de pie de página global (inyectado dinámicamente)
 ├── inicio/              # Landing Page principal de "MegaGeo Security"
 ├── geoportal/           # Aplicación Pública: Visor de mapas en tiempo real
+├── monitor-alertas/     # Centro operativo para priorizar y atender alertas
 ├── pruebas/             # Interfaz administrativa para gestionar (CRUD) alertas
 └── multimedia/          # Assets, recursos e imágenes (ej. Carrusel de Inicio)
 ```
@@ -52,6 +53,7 @@ La comunicación del backend a la base de datos se maneja principalmente mediant
 - `fecha_hora` (Timestamp)
 - `cedula`, `nombres`, `apellidos`, `celular`, `genero`, `fecha_nacimiento`, `edad`
 - `ubicacion`: Columna espacial (PostGIS). En la API se consumen `latitud` y `longitud` flotantes y se utiliza `ST_MakePoint` en el backend para facilitar el envío de datos desde el cliente.
+- `estado_atencion`: Estado operativo de monitoreo (`pendiente`, `en_atencion`, `cerrada`). Se almacena en `reportes_emergencia` y se expone junto a la vista de alertas mediante join en el backend.
 
 ## 5. El Geoportal (Detalle de Implementación)
 
@@ -73,3 +75,12 @@ El `geoportal/` es el visor principal público y ha sido diseñado enfocándose 
   1. *Límite Urbano:* Vía `WFS` (GeoJSON), el cual se extrae y se inyecta vectorialmente en el cliente.
   2. *Vías Urbanas:* Vía `WMS` (Capa de imagen en mosaico de azulejos - tile layer).
 - **Exponential Backoff:** El frontend cuenta con un sistema de reconexión por WebSocket para evitar spamear al servidor si se pierde la conexión.
+
+## 7. Monitor de Alertas
+
+El componente `monitor-alertas/` funciona como consola operativa de alertas. Consume el mismo `WS /ws/alertas`, muestra indicadores, filtros, cola priorizada, detalle de ciudadano y mapa de ubicación.
+
+- **Tipos reales de alerta:** emergencia médica, asalto y accidente.
+- **Priorización visual:** emergencia médica se marca como crítica; asalto y accidente se marcan como prioridad alta.
+- **Estado de atención:** los botones `Pendiente`, `En atención` y `Cerrada` actualizan la BD mediante `PATCH /alertas/{id}/estado`.
+- **Migración requerida:** ejecutar `db/001_estado_atencion_alertas.sql` antes de desplegar el backend que consume `estado_atencion`.

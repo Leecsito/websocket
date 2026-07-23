@@ -1,9 +1,9 @@
 # Rutas HTTP y WebSocket
 import asyncio
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.concurrency import run_in_threadpool
-from backend.models import AlertaRequest
-from backend.crud import consultar_alertas, insertar_alerta, actualizar_alerta
+from backend.models import AlertaRequest, EstadoAtencionRequest
+from backend.crud import consultar_alertas, insertar_alerta, actualizar_alerta, actualizar_estado_atencion
 
 router = APIRouter()
 
@@ -18,6 +18,15 @@ async def crear_alerta(req: AlertaRequest):
 async def editar_alerta(alerta_id: int, req: AlertaRequest):
     await run_in_threadpool(actualizar_alerta, alerta_id, req)
     return {"message": "Alerta actualizada exitosamente"}
+
+
+@router.patch("/alertas/{alerta_id}/estado")
+async def editar_estado_alerta(alerta_id: int, req: EstadoAtencionRequest):
+    try:
+        await run_in_threadpool(actualizar_estado_atencion, alerta_id, req.estado_atencion)
+        return {"message": "Estado de atencion actualizado exitosamente"}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @router.websocket("/ws/alertas")

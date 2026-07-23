@@ -340,7 +340,6 @@ select {
 
 .priority-strip.critica { background: var(--red); }
 .priority-strip.alta { background: var(--amber); }
-.priority-strip.media { background: var(--blue); }
 .priority-strip.baja { background: var(--green); }
 
 .alert-card-body {
@@ -381,7 +380,7 @@ select {
     background: var(--blue);
 }
 
-.type-icon.robo { background: var(--red); }
+.type-icon.asalto { background: var(--red); }
 .type-icon.accidente { background: var(--amber); }
 .type-icon.medica { background: var(--blue); }
 .type-icon.incendio { background: #ea580c; }
@@ -401,12 +400,11 @@ select {
 
 .priority-badge.critica { color: #991b1b; background: #fee2e2; }
 .priority-badge.alta { color: #92400e; background: #fef3c7; }
-.priority-badge.media { color: #1e40af; background: #dbeafe; }
 .priority-badge.baja { color: #065f46; background: #d1fae5; }
 
 .status-badge.pendiente { color: #334155; background: #f1f5f9; }
-.status-badge.atencion { color: #1e40af; background: #dbeafe; }
-.status-badge.cerrado { color: #065f46; background: #d1fae5; }
+.status-badge.en_atencion { color: #1e40af; background: #dbeafe; }
+.status-badge.cerrada { color: #065f46; background: #d1fae5; }
 
 .alert-description {
     margin: 10px 0;
