@@ -7,6 +7,7 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
     <link rel="stylesheet" href="../header/styles.css">
     <link rel="stylesheet" href="../footer/styles.css">
     <link rel="stylesheet" href="style.css">
@@ -48,20 +49,32 @@
                 </div>
 
                 <div class="filter-group">
-                    <label>Fecha</label>
-                    <input type="date" id="filterDate">
+                    <label>Fecha (Rango)</label>
+                    <div class="slider-wrapper">
+                        <div id="slider-date"></div>
+                    </div>
+                    <div class="range-labels">
+                        <span id="date-min"></span> / <span id="date-max"></span>
+                    </div>
                 </div>
 
                 <div class="filter-group">
-                    <label>Hora</label>
-                    <input type="time" id="filterTime">
+                    <label>Hora (Rango)</label>
+                    <div class="slider-wrapper">
+                        <div id="slider-time"></div>
+                    </div>
+                    <div class="range-labels">
+                        <span id="time-min"></span> / <span id="time-max"></span>
+                    </div>
                 </div>
 
                 <div class="filter-group">
                     <label>Edad (Rango)</label>
-                    <div class="range-inputs">
-                        <input type="number" id="filterAgeMin" placeholder="Min" min="0">
-                        <input type="number" id="filterAgeMax" placeholder="Max" min="0">
+                    <div class="slider-wrapper">
+                        <div id="slider-age"></div>
+                    </div>
+                    <div class="range-labels">
+                        <span id="age-min"></span> años / <span id="age-max"></span> años
                     </div>
                 </div>
 
@@ -125,6 +138,7 @@
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
     <script src="../config.js"></script>
     <script src="script.js"></script>
     <script src="../header/script.js"></script>

@@ -19,8 +19,7 @@
 
 body {
     background-color: #f8fafc;
-    height: 100vh;
-    overflow-y: auto;
+    overflow-x: hidden;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
@@ -31,8 +30,9 @@ body {
     grid-template-rows: 1fr;
     grid-template-areas:
         "sidebar map table";
-    height: calc(100vh - 72px);
-    margin-top: 0;
+    height: calc(100vh - 120px); /* Leave room for header/footer if they take space, adjust as needed */
+    min-height: 600px;
+    margin: 20px 0;
 }
 
 
@@ -88,18 +88,42 @@ body {
     margin-bottom: 5px;
 }
 
-.filter-group select,
-.filter-group input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    font-size: 0.9rem;
+.slider-wrapper {
+    padding: 0 10px;
+    margin: 15px 0;
 }
 
-.range-inputs {
+.range-labels {
     display: flex;
-    gap: 10px;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-top: 8px;
+}
+
+/* Custom noUiSlider styles for premium look */
+.noUi-connect {
+    background: var(--primary);
+}
+.noUi-handle {
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    cursor: grab;
+}
+.noUi-handle:active {
+    cursor: grabbing;
+}
+.noUi-horizontal {
+    height: 6px;
+}
+.noUi-horizontal .noUi-handle {
+    width: 18px;
+    height: 18px;
+    right: -9px;
+    top: -6px;
+}
+.noUi-handle:before, .noUi-handle:after {
+    display: none; /* Hide default handle lines */
 }
 
 .btn-primary, .btn-secondary, .btn-outline {
@@ -171,6 +195,7 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 10;
+    max-height: 100%;
 }
 
 .log-header {
@@ -204,6 +229,7 @@ body {
 .table-container {
     flex: 1;
     overflow-y: auto;
+    min-height: 0; /* Crucial for flex child scroll */
 }
 
 table {
