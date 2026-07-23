@@ -26,7 +26,7 @@ body {
 /* Layout Grid */
 .dashboard-container {
     display: grid;
-    grid-template-columns: 280px 1fr 350px;
+    grid-template-columns: 280px 1fr 420px;
     grid-template-rows: 1fr;
     grid-template-areas:
         "sidebar map table";
@@ -317,7 +317,7 @@ td {
 
 /* Popup de Leaflet personalizado */
 .leaflet-popup-content b {
-    color: var(--bg-dark);
+    color: var(--text-dark);
     display: block;
     border-bottom: 1px solid #ccc;
     margin-bottom: 5px;
