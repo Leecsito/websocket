@@ -7,7 +7,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 // ── Capa WMS de GeoServer ─────────────────────────────────────
-const urlGeoServerWMS = 'https://michael-photography-savings-commonly.trycloudflare.com/geoserver/seguridad_riobamba/wms';
+const urlGeoServerWMS = 'https://potential-tucson-reserve-switching.trycloudflare.com/geoserver/seguridad_riobamba/wms';
 const capaGeoServer = L.tileLayer.wms(urlGeoServerWMS, {
     layers: 'seguridad_riobamba:geoalerta_capas',
     format: 'image/png',
@@ -69,6 +69,11 @@ function conectarWebSocket() {
             });
             
             aplicarFiltros(); // Renderiza usando los filtros actuales
+            
+            // ¡Aquí "molestamos" a GeoServer para que actualice la imagen del mapa!
+            if (capaGeoServer) {
+                capaGeoServer.setParams({ fake: Date.now() }, false);
+            }
         } catch (error) {
             console.error('Error parseando datos:', error);
         }

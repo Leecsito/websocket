@@ -21,6 +21,7 @@ var btnGuardarText = document.getElementById('btnGuardarText');
 var pickMap     = null;
 var pickMarker  = null;
 var mapVisible  = false;
+var capaGeoServerPruebas = null;
 
 function initMap() {
     if (pickMap) return; // ya inicializado
@@ -31,14 +32,15 @@ function initMap() {
     }).addTo(pickMap);
 
     // ── Capa WMS de GeoServer ───────────────────────────
-    var urlGeoServerWMS = 'https://michael-photography-savings-commonly.trycloudflare.com/geoserver/seguridad_riobamba/wms';
-    L.tileLayer.wms(urlGeoServerWMS, {
+    var urlGeoServerWMS = 'https://potential-tucson-reserve-switching.trycloudflare.com/geoserver/seguridad_riobamba/wms';
+    capaGeoServerPruebas = L.tileLayer.wms(urlGeoServerWMS, {
         layers: 'seguridad_riobamba:geoalerta_capas',
         format: 'image/png',
         transparent: true,
         version: '1.1.0',
         zIndex: 1000
-    }).addTo(pickMap);
+    });
+    capaGeoServerPruebas.addTo(pickMap);
 
     pickMap.on('click', function(e) {
         var lat = e.latlng.lat;
@@ -362,7 +364,12 @@ function connectWebSocket() {
     ws.onopen = function() { setConnected(true); };
 
     ws.onmessage = function(event) {
-        try { renderAlerts(JSON.parse(event.data)); }
+        try { 
+            renderAlerts(JSON.parse(event.data)); 
+            if (capaGeoServerPruebas) {
+                capaGeoServerPruebas.setParams({ fake: Date.now() }, false);
+            }
+        }
         catch (e) { console.error('Error parseando datos:', e); }
     };
 
