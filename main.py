@@ -19,7 +19,7 @@ app.add_middleware(
 
 # Construido por partes para evitar las alertas molestas de GitGuardian
 _pwd = "dadI9bzMWNPS2zxp"
-DB_URL = f"postgresql://postgres:{_pwd}@db.vlovptmkmpxihzljbdku.supabase.co:5432/postgres"
+DB_URL = f"postgresql://postgres.vlovptmkmpxihzljbdku:{_pwd}@aws-0-us-east-1.pooler.supabase.com:5432/postgres"
 
 def get_db_connection():
     return psycopg2.connect(DB_URL)
