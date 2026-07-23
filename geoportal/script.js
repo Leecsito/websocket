@@ -214,30 +214,25 @@ window.centrarMapa = function(lat, lng) {
 // Lógica de Filtros y Sliders
 let filterValues = {
     gender: 'Todos',
-    dateMin: 0,
-    dateMax: 0,
     timeMin: 0,
-    timeMax: 1440,
-    ageMin: 0,
-    ageMax: 120
+    timeMax: 1440
 };
 
-// Age Slider
-const sliderAge = document.getElementById('slider-age');
-noUiSlider.create(sliderAge, {
-    start: [0, 120],
-    connect: true,
-    range: { 'min': 0, 'max': 120 },
-    step: 1
-});
-sliderAge.noUiSlider.on('update', function (values) {
-    let min = Math.round(values[0]);
-    let max = Math.round(values[1]);
-    document.getElementById('age-min').textContent = min;
-    document.getElementById('age-max').textContent = max;
-    filterValues.ageMin = min;
-    filterValues.ageMax = max;
-    if (allEvents.length > 0) aplicarFiltros();
+// Gender Cards Logic
+const genderCards = document.querySelectorAll('.gender-card');
+const filterGenderInput = document.getElementById('filterGender');
+
+genderCards.forEach(card => {
+    card.addEventListener('click', () => {
+        // Remove active class from all
+        genderCards.forEach(c => c.classList.remove('active'));
+        // Add to clicked
+        card.classList.add('active');
+        // Update hidden input
+        filterGenderInput.value = card.dataset.value;
+        filterValues.gender = card.dataset.value;
+        if (allEvents.length > 0) aplicarFiltros();
+    });
 });
 
 // Time Slider (0 to 1440 minutes)
@@ -263,47 +258,35 @@ sliderTime.noUiSlider.on('update', function (values) {
     if (allEvents.length > 0) aplicarFiltros();
 });
 
-// Date Slider (Unix timestamps: 30 days ago to now)
-const sliderDate = document.getElementById('slider-date');
-const dateMaxNow = new Date();
-const dateMinPast = new Date(dateMaxNow.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
-noUiSlider.create(sliderDate, {
-    start: [dateMinPast.getTime(), dateMaxNow.getTime()],
-    connect: true,
-    range: {
-        'min': dateMinPast.getTime(),
-        'max': dateMaxNow.getTime()
-    },
-    step: 24 * 60 * 60 * 1000 // 1 day
-});
-function formatDate(ms) {
-    const d = new Date(parseInt(ms));
-    return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
-}
-sliderDate.noUiSlider.on('update', function (values) {
-    let min = parseInt(values[0]);
-    let max = parseInt(values[1]);
-    document.getElementById('date-min').textContent = formatDate(min);
-    document.getElementById('date-max').textContent = formatDate(max);
-    filterValues.dateMin = min;
-    filterValues.dateMax = max + (24 * 60 * 60 * 1000) - 1; // End of the selected day
-    if (allEvents.length > 0) aplicarFiltros();
-});
 
 function aplicarFiltros() {
-    filterValues.gender = document.getElementById('filterGender').value;
+    filterValues.gender = filterGenderInput.value;
+    const dateMinStr = document.getElementById('filterDateMin').value;
+    const dateMaxStr = document.getElementById('filterDateMax').value;
+    const ageMin = parseInt(document.getElementById('filterAgeMin').value);
+    const ageMax = parseInt(document.getElementById('filterAgeMax').value);
+
+    // Convert date strings to timestamps if they exist
+    const dateMinTs = dateMinStr ? new Date(dateMinStr + 'T00:00:00').getTime() : null;
+    const dateMaxTs = dateMaxStr ? new Date(dateMaxStr + 'T23:59:59').getTime() : null;
 
     const filteredEvents = allEvents.filter(ev => {
         let match = true;
         if (filterValues.gender !== 'Todos' && ev.genero !== filterValues.gender) match = false;
-        if (ev.edad < filterValues.ageMin || ev.edad > filterValues.ageMax) match = false;
+        
+        // Age filter
+        if (!isNaN(ageMin) && ev.edad < ageMin) match = false;
+        if (!isNaN(ageMax) && ev.edad > ageMax) match = false;
         
         if (ev.fecha_hora) {
-            const evDateObj = new Date(ev.fecha_hora);
+            // "2024-05-10 14:30:00" -> Safari/iOS might need "2024-05-10T14:30:00"
+            const safeDateStr = ev.fecha_hora.replace(' ', 'T');
+            const evDateObj = new Date(safeDateStr);
             const evTimeMs = evDateObj.getTime();
             
             // Check Date Range
-            if (evTimeMs < filterValues.dateMin || evTimeMs > filterValues.dateMax) match = false;
+            if (dateMinTs && evTimeMs < dateMinTs) match = false;
+            if (dateMaxTs && evTimeMs > dateMaxTs) match = false;
             
             // Check Time Range
             const evMinutes = evDateObj.getHours() * 60 + evDateObj.getMinutes();
@@ -315,14 +298,29 @@ function aplicarFiltros() {
     renderEvents(filteredEvents);
 }
 
-document.getElementById('filterGender').addEventListener('change', aplicarFiltros);
+// Attach change listeners to standard inputs
+['filterDateMin', 'filterDateMax', 'filterAgeMin', 'filterAgeMax'].forEach(id => {
+    document.getElementById(id).addEventListener('change', aplicarFiltros);
+    document.getElementById(id).addEventListener('input', aplicarFiltros);
+});
 
 // Limpiar filtros
 document.getElementById('btnClearFilters').addEventListener('click', () => {
-    document.getElementById('filterGender').value = 'Todos';
-    sliderAge.noUiSlider.set([0, 120]);
+    // Reset cards
+    genderCards.forEach(c => c.classList.remove('active'));
+    document.querySelector('.gender-card[data-value="Todos"]').classList.add('active');
+    filterGenderInput.value = 'Todos';
+
+    // Reset standard inputs
+    document.getElementById('filterDateMin').value = '';
+    document.getElementById('filterDateMax').value = '';
+    document.getElementById('filterAgeMin').value = '';
+    document.getElementById('filterAgeMax').value = '';
+
+    // Reset slider
     sliderTime.noUiSlider.set([0, 1440]);
-    sliderDate.noUiSlider.set([dateMinPast.getTime(), dateMaxNow.getTime()]);
+    
+    // aplicarFiltros is called by slider update
 });
 
 // Inicializar conexión

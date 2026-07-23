@@ -40,21 +40,20 @@
                 
                 <div class="filter-group">
                     <label>Género de la Víctima</label>
-                    <select id="filterGender">
-                        <option value="Todos">Todos</option>
-                        <option value="Masculino">Masculino</option>
-                        <option value="Femenino">Femenino</option>
-                        <option value="Otro">Otro</option>
-                    </select>
+                    <div class="gender-cards" id="genderCards">
+                        <div class="gender-card active" data-value="Todos">Todos</div>
+                        <div class="gender-card" data-value="Masculino">Masc</div>
+                        <div class="gender-card" data-value="Femenino">Fem</div>
+                        <div class="gender-card" data-value="Otro">Otro</div>
+                    </div>
+                    <input type="hidden" id="filterGender" value="Todos">
                 </div>
 
                 <div class="filter-group">
-                    <label>Fecha (Rango)</label>
-                    <div class="slider-wrapper">
-                        <div id="slider-date"></div>
-                    </div>
-                    <div class="range-labels">
-                        <span id="date-min"></span> / <span id="date-max"></span>
+                    <label>Fechas (Desde - Hasta)</label>
+                    <div class="range-inputs">
+                        <input type="date" id="filterDateMin">
+                        <input type="date" id="filterDateMax">
                     </div>
                 </div>
 
@@ -69,12 +68,10 @@
                 </div>
 
                 <div class="filter-group">
-                    <label>Edad (Rango)</label>
-                    <div class="slider-wrapper">
-                        <div id="slider-age"></div>
-                    </div>
-                    <div class="range-labels">
-                        <span id="age-min"></span> años / <span id="age-max"></span> años
+                    <label>Edad (Min - Max)</label>
+                    <div class="range-inputs">
+                        <input type="number" id="filterAgeMin" placeholder="Min" min="0">
+                        <input type="number" id="filterAgeMax" placeholder="Max" min="0">
                     </div>
                 </div>
 
