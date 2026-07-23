@@ -24,7 +24,7 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(data, 'text/html');
                 const header = doc.querySelector('header');
-                if(header) {
+                if (header) {
                     document.getElementById('header-placeholder').replaceWith(header);
                     // Avisar al script del header que el DOM se ha actualizado
                     document.dispatchEvent(new Event('headerLoaded'));
@@ -52,12 +52,14 @@
                 </p>
 
                 <div class="hero-actions">
-                    <a href="#mapa" class="btn btn-primary">
+                    <a href="../geoportal/index.html" class="btn btn-primary">
                         <i class="fa-solid fa-map-location-dot"></i>
                         Abrir Mapa Urbano
                     </a>
-                    <a href="#como-funciona" class="btn btn-secondary">
-                        Conoce el Sistema
+                    <a href="https://drive.google.com/drive/folders/1KR6mrSgUkfvbne4g0zEMF6iu_3k34ZDi?usp=sharing"
+                        target="_blank" class="btn btn-secondary">
+                        <i class="fa-solid fa-download"></i>
+                        Descarga la app
                     </a>
                 </div>
 
@@ -80,11 +82,15 @@
             <div class="hero-visuals">
                 <div class="carousel-wrapper">
                     <div class="carousel-slides">
-                        <img src="../multimedia/carusel/Vista_del_Volcán_Chimborazo_desde_Riobamba.jpg" alt="Chimborazo" class="carousel-img active">
-                        <img src="../multimedia/carusel/riobamba-centro-1-1536x864.jpg" alt="Centro Riobamba" class="carousel-img">
-                        <img src="../multimedia/carusel/Riobamba-Cathedral.jpg" alt="Catedral de Riobamba" class="carousel-img">
+                        <img src="../multimedia/carusel/Vista_del_Volcán_Chimborazo_desde_Riobamba.jpg" alt="Chimborazo"
+                            class="carousel-img active">
+                        <img src="../multimedia/carusel/riobamba-centro-1-1536x864.jpg" alt="Centro Riobamba"
+                            class="carousel-img">
+                        <img src="../multimedia/carusel/Riobamba-Cathedral.jpg" alt="Catedral de Riobamba"
+                            class="carousel-img">
                         <img src="../multimedia/carusel/Sucre-Park.jpg" alt="Parque Sucre" class="carousel-img">
-                        <img src="../multimedia/carusel/Vista_aérea_de_Riobamba.jpg" alt="Vista Aérea Riobamba" class="carousel-img">
+                        <img src="../multimedia/carusel/Vista_aérea_de_Riobamba.jpg" alt="Vista Aérea Riobamba"
+                            class="carousel-img">
                     </div>
                     <div class="carousel-indicators">
                         <span class="indicator active" data-slide="0"></span>
@@ -108,7 +114,7 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(data, 'text/html');
                 const footer = doc.querySelector('footer');
-                if(footer) {
+                if (footer) {
                     document.getElementById('footer-placeholder').replaceWith(footer);
                     document.dispatchEvent(new Event('footerLoaded'));
                 }
