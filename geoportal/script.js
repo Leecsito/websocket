@@ -11,8 +11,8 @@ let markersLayer = L.layerGroup().addTo(map);
 let allEvents = []; 
 
 // --- Capas de GeoServer ---
-const urlGeoServer = "https://beverages-wings-joke-championships.trycloudflare.com/geoserver/geoalerta";
-const urlWms = `${urlGeoServer}/wms`;
+const urlGeoServer = "https://beverages-wings-joke-championships.trycloudflare.com/geoserver";
+const urlWms = `${urlGeoServer}/geoalerta/wms`;
 
 map.createPane("panelVias");
 map.getPane("panelVias").style.zIndex = "410";

@@ -41,15 +41,18 @@ El proyecto consta de un **Backend en Python (FastAPI)** y dos aplicaciones de *
 
 ## 4. Base de Datos (Esquema Principal)
 
-La tabla principal es `alertas`. Campos clave:
-- `id` (Serial / Primary Key)
-- `tipo_evento` (Ej: Robo, Emergencia médica)
-- `fecha`, `hora`
-- Datos de la víctima: `cedula`, `nombres`, `apellidos`, `celular`, `genero`, `fecha_nacimiento`, `edad`, `contacto_emergencia`.
+El backend interactúa con la base de datos a través de dos entidades principales:
+- **`vista_reportes_emergencia`**: Vista de solo lectura utilizada para obtener el listado de alertas.
+- **`reportes_emergencia`**: Tabla base utilizada para insertar (POST) y actualizar (PUT) reportes.
+
+Campos clave actualizados:
+- `id` (Primary Key)
+- `tipo_reporte` (Ej: Robo, Accidente, Emergencia médica)
+- `fecha_hora` (Timestamp con zona horaria)
+- Datos de la víctima: `cedula`, `nombres`, `apellidos`, `celular`, `genero`, `fecha_nacimiento`, `celular_contacto_emergencia`.
 - `descripcion`
-- `geom`: Columna espacial que guarda un Point (Longitud, Latitud) con SRID 4326.
-  - Al insertar/actualizar se usa la instrucción SQL: `ST_SetSRID(ST_MakePoint(long, lat), 4326)`
-  - Al consultar se extrae como JSON para consumirlo en el frontend: `ST_AsGeoJSON(geom)`
+- `ubicacion`: Columna espacial (PostGIS) que guarda la coordenada.
+- Adicionalmente, la API devuelve y recibe `latitud` y `longitud` directamente (números flotantes) para facilitar el manejo en el frontend, construyendo el `ST_MakePoint(longitud, latitud)` internamente en las inserciones/actualizaciones.
 
 ## 5. Endpoints Principales (API REST & WebSockets)
 
@@ -61,5 +64,6 @@ Las rutas (definidas tanto en el monolito `main.py` como en `backend/routes.py`)
 ## 6. Detalles Importantes de Implementación / Contexto para la IA
 
 - **Doble estructura de Backend:** Actualmente existe un `main.py` en la raíz del proyecto, el cual se está ejecutando en el entorno local (usando `uvicorn main:app --reload`). A la par, existe un directorio `backend/` que parece ser una refactorización modular. Al realizar cambios en la lógica del servidor, **se debe confirmar en qué versión del backend se está trabajando**, o en su defecto, actualizar ambas versiones.
-- **Manejo de WebSocket en Frontend:** En el frontend (por ejemplo `pruebas/script.js`), el cliente abre una conexión WebSocket (`ws://.../ws/alertas`) y mediante el evento `onmessage` actualiza reactivamente la lista lateral de tarjetas y los marcadores del mapa con los datos recibidos desde el servidor.
-- **Carga Geográfica:** El frontend interactúa únicamente con coordenadas puras (latitud y longitud), y es el backend de Python quien se encarga de transformarlas hacia y desde geometrías de PostGIS usando las funciones espaciales puras de SQL (sin ORM complejos como SQLAlchemy+GeoAlchemy, solo `psycopg2` puro).
+- **Manejo de WebSocket y Exponential Backoff:** El endpoint WebSocket consulta la base de datos periódicamente. Para evitar bloqueos por parte del "Pooler" de Supabase (error `ECIRCUITBREAKER` por demasiadas conexiones concurrentes fallidas), se implementó un mecanismo de *Exponential Backoff* que pausa progresivamente los reintentos (hasta 60s) cuando falla la conexión.
+- **Integración con GeoServer:** El frontend principal de mapas (`geoportal/script.js`) carga capas geográficas externas (Límite Urbano y Vías Urbanas) directamente desde una instancia de GeoServer desplegada mediante un túnel de Cloudflare, usando `WMS` (para vías urbanas en formato tile) y `WFS` (GeoJSON con fetch para la línea de límite urbano).
+- **Carga Geográfica:** El frontend consume latitud y longitud puras, y es el backend de Python quien las transforma a geometrías PostGIS (`ubicacion`) mediante instrucciones SQL (`ST_MakePoint`), eliminando la necesidad de parsear GeoJSONs manualmente en el lado del cliente (excepto al consumir WFS de GeoServer).
