@@ -36,7 +36,7 @@
             <div>
                 <p class="eyebrow">Administracion</p>
                 <h1>Usuarios</h1>
-                <p>Listado simple de usuarios registrados en Supabase Auth.</p>
+                <p>Listado de ciudadanos registrados en la aplicación móvil.</p>
             </div>
             <div class="total-card">
                 <span id="totalUsers">0</span>
@@ -48,7 +48,7 @@
             <div class="toolbar">
                 <div class="search-box">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input id="searchInput" type="search" placeholder="Buscar por nombre, correo o telefono">
+                    <input id="searchInput" type="search" placeholder="Buscar por nombre, cédula o teléfono">
                 </div>
                 <button type="button" id="btnReload" title="Recargar usuarios" aria-label="Recargar usuarios">
                     <i class="fa-solid fa-rotate-right"></i>
@@ -60,10 +60,10 @@
                     <thead>
                         <tr>
                             <th>Usuario</th>
-                            <th>Correo</th>
-                            <th>Telefono</th>
-                            <th>Registro</th>
-                            <th>Ultimo ingreso</th>
+                            <th>Cédula</th>
+                            <th>Teléfono</th>
+                            <th>Género</th>
+                            <th>Fecha Nac.</th>
                         </tr>
                     </thead>
                     <tbody id="usersTableBody">

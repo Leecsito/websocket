@@ -27,8 +27,8 @@ function formatDate(value) {
 }
 
 function initials(user) {
-    var source = user.nombre || user.email || user.phone || 'U';
-    return source.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(function(part) {
+    var name = ((user.nombres || '') + ' ' + (user.apellidos || '')).trim() || 'U';
+    return name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(function(part) {
         return part.charAt(0).toUpperCase();
     }).join('') || 'U';
 }
@@ -42,14 +42,14 @@ function renderUsuarios() {
     }
 
     tbody.innerHTML = filteredUsuarios.map(function(user) {
-        var name = user.nombre || 'Usuario sin nombre';
+        var name = ((user.nombres || '') + ' ' + (user.apellidos || '')).trim() || 'Usuario sin nombre';
         return '' +
             '<tr>' +
                 '<td><div class="user-cell"><span class="user-avatar">' + escapeHtml(initials(user)) + '</span><span>' + escapeHtml(name) + '</span></div></td>' +
-                '<td>' + (user.email ? escapeHtml(user.email) : '<span class="muted">Sin correo</span>') + '</td>' +
-                '<td>' + (user.phone ? escapeHtml(user.phone) : '<span class="muted">Sin telefono</span>') + '</td>' +
-                '<td>' + formatDate(user.created_at) + '</td>' +
-                '<td>' + formatDate(user.last_sign_in_at) + '</td>' +
+                '<td>' + (user.cedula ? escapeHtml(user.cedula) : '<span class="muted">Sin cédula</span>') + '</td>' +
+                '<td>' + (user.celular ? escapeHtml(user.celular) : '<span class="muted">Sin teléfono</span>') + '</td>' +
+                '<td>' + (user.genero ? escapeHtml(user.genero) : '<span class="muted">-</span>') + '</td>' +
+                '<td>' + formatDate(user.fecha_nacimiento) + '</td>' +
             '</tr>';
     }).join('');
 }
@@ -57,10 +57,11 @@ function renderUsuarios() {
 function applySearch() {
     var query = searchInput.value.trim().toLowerCase();
     filteredUsuarios = usuarios.filter(function(user) {
+        var name = ((user.nombres || '') + ' ' + (user.apellidos || '')).trim();
         var text = [
-            user.nombre,
-            user.email,
-            user.phone,
+            name,
+            user.cedula,
+            user.celular,
             user.id
         ].join(' ').toLowerCase();
         return !query || text.indexOf(query) !== -1;

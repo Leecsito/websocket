@@ -50,27 +50,19 @@ def consultar_usuarios():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
-        SELECT id, email, phone, created_at, last_sign_in_at, raw_user_meta_data
-        FROM auth.users
-        ORDER BY created_at DESC
+        SELECT id, cedula, nombres, apellidos, celular, genero, fecha_nacimiento
+        FROM usuarios
+        ORDER BY id DESC
     """)
     rows = cur.fetchall()
     cur.close()
     conn.close()
 
-    usuarios = []
     for row in rows:
-        metadata = row.get("raw_user_meta_data") or {}
-        usuarios.append({
-            "id": str(row["id"]),
-            "email": row.get("email"),
-            "phone": row.get("phone"),
-            "created_at": str(row["created_at"]) if row.get("created_at") else None,
-            "last_sign_in_at": str(row["last_sign_in_at"]) if row.get("last_sign_in_at") else None,
-            "nombre": metadata.get("name") or metadata.get("full_name") or metadata.get("nombres"),
-        })
+        if row.get('fecha_nacimiento'):
+            row['fecha_nacimiento'] = str(row['fecha_nacimiento'])
 
-    return usuarios
+    return [dict(row) for row in rows]
 
 class AlertaRequest(BaseModel):
     tipo_reporte: str
