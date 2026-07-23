@@ -32,30 +32,23 @@ function conectarWebSocket() {
             
             // Transformar los datos de la DB al formato que usa el mapa
             allEvents = data.map(item => {
-                let lat = 0, lng = 0;
-                if (item.geom) {
-                    try {
-                        const geo = JSON.parse(item.geom);
-                        if (geo.coordinates) {
-                            lng = geo.coordinates[0];
-                            lat = geo.coordinates[1];
-                        }
-                    } catch(e) {}
-                }
+                // La API ya devuelve latitud y longitud directamente
+                const lat = item.latitud || 0;
+                const lng = item.longitud || 0;
                 
                 return {
                     id: item.id,
                     lat: lat,
                     lng: lng,
-                    fecha: item.fecha || '',
-                    hora: item.hora || '',
+                    fecha_hora: item.fecha_hora || '',
                     nombres: (item.nombres || '') + " " + (item.apellidos || ''),
                     genero: item.genero || 'No especificado',
                     edad: item.edad || 0,
-                    tipo: item.tipo_evento || 'Desconocido',
+                    tipo: item.tipo_reporte || 'Desconocido',
                     descripcion: item.descripcion || ''
                 };
             });
+
             
             aplicarFiltros(); // Renderiza usando los filtros actuales
             
@@ -102,7 +95,7 @@ function renderEvents(events) {
             <strong>Víctima:</strong> ${ev.nombres}<br>
             <strong>Género:</strong> ${ev.genero}<br>
             <strong>Edad:</strong> ${ev.edad} años<br>
-            <strong>Fecha:</strong> ${ev.fecha} ${ev.hora}<br>
+            <strong>Fecha:</strong> ${ev.fecha_hora ? ev.fecha_hora.substring(0,16) : ''}<br>
             <strong>Detalle:</strong> ${ev.descripcion}
         `;
         marker.bindPopup(popupContent);
@@ -111,7 +104,7 @@ function renderEvents(events) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${ev.id}</td>
-            <td>${ev.fecha} ${ev.hora.substring(0,5)}</td>
+            <td>${ev.fecha_hora ? ev.fecha_hora.substring(0,16) : ''}</td>
             <td>${ev.nombres}</td>
             <td>${ev.genero} / ${ev.edad}</td>
             <td>${ev.tipo}</td>

@@ -112,14 +112,18 @@ function setConnected(ok) {
     }
 }
 
-function formatTime(t) {
-    return t ? t.substring(0, 5) : '--:--';
+function formatTime(ts) {
+    if (!ts) return '--:--';
+    // fecha_hora es timestamp: '2026-07-09 00:03:19.770753+00:00'
+    var match = ts.match(/(\d{2}:\d{2})/);
+    return match ? match[1] : '--:--';
 }
 
-function formatDate(d) {
-    if (!d) return '';
-    var p = d.split('-');
-    return p[2] + '/' + p[1] + '/' + p[0];
+function formatDate(ts) {
+    if (!ts) return '';
+    var match = ts.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (!match) return '';
+    return match[3] + '/' + match[2] + '/' + match[1];
 }
 
 // ── Renderizar cards ─────────────────────────────────────────
@@ -140,18 +144,13 @@ function renderAlerts(alerts) {
         var a = alerts[i];
 
         var locText = 'Ubicación no disponible';
-        if (a.geom) {
-            try {
-                var geo = JSON.parse(a.geom);
-                if (geo.coordinates) {
-                    locText = geo.coordinates[1].toFixed(4) + ', ' + geo.coordinates[0].toFixed(4);
-                }
-            } catch (e) {}
+        if (a.latitud && a.longitud) {
+            locText = parseFloat(a.latitud).toFixed(4) + ', ' + parseFloat(a.longitud).toFixed(4);
         }
 
         var iconColor =
-            (a.tipo_evento && a.tipo_evento.toLowerCase().indexOf('robo') !== -1)       ? 'var(--warning-color)' :
-            (a.tipo_evento && a.tipo_evento.toLowerCase().indexOf('emergencia') !== -1)  ? 'var(--danger-color)'  :
+            (a.tipo_reporte && a.tipo_reporte.toLowerCase().indexOf('robo') !== -1)       ? 'var(--warning-color)' :
+            (a.tipo_reporte && a.tipo_reporte.toLowerCase().indexOf('emergencia') !== -1)  ? 'var(--danger-color)'  :
             'var(--accent-color)';
 
         var card = document.createElement('div');
@@ -161,12 +160,12 @@ function renderAlerts(alerts) {
             '<div class="card-header">' +
                 '<div class="event-type">' +
                     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + iconColor + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>' +
-                    (a.tipo_evento || 'Alerta') +
+                    (a.tipo_reporte || 'Alerta') +
                 '</div>' +
                 '<div style="display:flex;align-items:center;gap:0.5rem;">' +
                     '<div class="event-time">' +
-                        '<div class="time-main">' + formatTime(a.hora) + '</div>' +
-                        '<div class="time-date">' + formatDate(a.fecha) + '</div>' +
+                        '<div class="time-main">' + formatTime(a.fecha_hora) + '</div>' +
+                        '<div class="time-date">' + formatDate(a.fecha_hora) + '</div>' +
                     '</div>' +
                     '<button class="btn-edit-card" title="Editar alerta" data-id="' + a.id + '">' +
                         '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>' +
@@ -179,7 +178,7 @@ function renderAlerts(alerts) {
                     '<div class="info-item"><span class="info-label">Afectado</span><span class="info-value">' + (a.nombres || '') + ' ' + (a.apellidos || '') + '</span></div>' +
                     '<div class="info-item"><span class="info-label">Contacto</span><span class="info-value">' + (a.celular || 'No registrado') + '</span></div>' +
                     '<div class="info-item"><span class="info-label">Cédula</span><span class="info-value">' + (a.cedula || 'N/A') + '</span></div>' +
-                    '<div class="info-item"><span class="info-label">Emergencia</span><span class="info-value">' + (a.contacto_emergencia || 'N/A') + '</span></div>' +
+                    '<div class="info-item"><span class="info-label">Emergencia</span><span class="info-value">' + (a.celular_contacto_emergencia || 'N/A') + '</span></div>' +
                 '</div>' +
             '</div>' +
             '<div class="card-footer">' +
