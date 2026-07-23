@@ -88,6 +88,9 @@ function pct(part, total) {
 }
 
 function initMap() {
+    var container = document.getElementById('analysisMap');
+    if (!container) return;
+
     map = L.map('analysisMap', { zoomControl: true, attributionControl: false })
         .setView([-1.6669, -78.6521], 13);
 
@@ -95,11 +98,17 @@ function initMap() {
         maxZoom: 18
     }).addTo(map);
 
-    heatLayer = L.heatLayer([], { radius: 18, blur: 14, maxZoom: 16 }).addTo(map);
+    heatLayer = L.heatLayer([], { radius: 22, blur: 16, maxZoom: 16 }).addTo(map);
+
+    setTimeout(function() {
+        if (map) map.invalidateSize();
+    }, 200);
 }
 
 function initTimeSlider() {
     var slider = document.getElementById('timeSlider');
+    if (!slider) return;
+
     noUiSlider.create(slider, {
         start: [0, 1440],
         connect: true,
@@ -124,6 +133,7 @@ function formatMinutes(minutes) {
 
 function populateUserSelect() {
     var select = document.getElementById('userSelect');
+    if (!select) return;
     var current = select.value;
     select.innerHTML = '<option value="todos">Todos los usuarios</option>';
 
@@ -186,6 +196,7 @@ function applyFilters() {
 function renderDashboard() {
     document.getElementById('filterCount').textContent = filteredReports.length + ' reportes';
     updateKpis();
+    renderMap();
     renderTrendChart();
     renderHourlyChart();
     renderDonutChart();
@@ -196,7 +207,6 @@ function renderDashboard() {
     renderHotspots();
     renderExecMetrics();
     renderTable();
-    renderMap();
 }
 
 function updateKpis() {
@@ -216,6 +226,7 @@ function updateKpis() {
 
 function renderBarChart(containerId, rows) {
     var container = document.getElementById(containerId);
+    if (!container) return;
     if (!rows.length || rows.every(function(r) { return r.value === 0; })) {
         container.innerHTML = '<div class="empty-cell">Sin datos</div>';
         return;
@@ -223,7 +234,7 @@ function renderBarChart(containerId, rows) {
     var max = Math.max.apply(null, rows.map(function(r) { return r.value; })) || 1;
     container.innerHTML = rows.map(function(row) {
         var width = Math.round((row.value / max) * 100);
-        return '<div class="bar-row"><span class="bar-label">' + escapeHtml(row.label) + '</span>' +
+        return '<div class="bar-row"><span class="bar-label" title="' + escapeHtml(row.label) + '">' + escapeHtml(row.label) + '</span>' +
             '<div class="bar-track"><div class="bar-fill ' + (row.color || '') + '" style="width:' + width + '%"></div></div>' +
             '<span class="bar-value">' + row.value + '</span></div>';
     }).join('');
@@ -231,6 +242,7 @@ function renderBarChart(containerId, rows) {
 
 function renderTrendChart() {
     var container = document.getElementById('chartTrend');
+    if (!container) return;
     var byDate = {};
 
     filteredReports.forEach(function(r) {
@@ -248,30 +260,52 @@ function renderTrendChart() {
 
     var values = keys.map(function(k) { return byDate[k]; });
     var max = Math.max.apply(null, values) || 1;
-    var w = 600, h = 200, pad = 30;
-    var barW = Math.max(12, (w - pad * 2) / keys.length - 4);
+    var w = 600, h = 220;
+    var padLeft = 32, padRight = 16, padTop = 24, padBottom = 35;
+    var chartW = w - padLeft - padRight;
+    var chartH = h - padTop - padBottom;
+    var slotW = chartW / keys.length;
+    var barW = Math.max(10, slotW - 6);
 
-    var bars = keys.map(function(key, i) {
+    var svgParts = [];
+
+    // Horizontal baseline
+    svgParts.push('<line x1="' + padLeft + '" y1="' + (padTop + chartH) + '" x2="' + (w - padRight) + '" y2="' + (padTop + chartH) + '" stroke="#cbd5e1" stroke-width="1.5"/>');
+
+    keys.forEach(function(key, i) {
         var val = byDate[key];
-        var barH = (val / max) * (h - pad * 2);
-        var x = pad + i * ((w - pad * 2) / keys.length);
-        var y = h - pad - barH;
-        return '<rect x="' + x + '" y="' + y + '" width="' + barW + '" height="' + barH + '" rx="3" fill="#2563eb" opacity="0.85">' +
-            '<title>' + formatDateShort(key) + ': ' + val + '</title></rect>';
-    }).join('');
+        var barH = max > 0 ? (val / max) * chartH : 0;
+        var centerX = padLeft + i * slotW + slotW / 2;
+        var x = centerX - barW / 2;
+        var y = padTop + chartH - barH;
 
-    var labels = keys.map(function(key, i) {
-        if (keys.length > 8 && i % 2 !== 0) return '';
-        var x = pad + i * ((w - pad * 2) / keys.length) + barW / 2;
-        return '<text x="' + x + '" y="' + (h - 8) + '" text-anchor="middle" fill="#64748b" font-size="10">' +
-            formatDateShort(key) + '</text>';
-    }).join('');
+        svgParts.push(
+            '<rect x="' + x + '" y="' + y + '" width="' + barW + '" height="' + Math.max(barH, 2) + '" rx="3" fill="#2563eb" opacity="0.88">' +
+            '<title>' + formatDateShort(key) + ': ' + val + ' reportes</title></rect>'
+        );
 
-    container.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' + bars + labels + '</svg>';
+        if (val > 0) {
+            svgParts.push('<text x="' + centerX + '" y="' + Math.max(y - 4, 14) + '" text-anchor="middle" fill="#1e40af" font-size="10" font-weight="700">' + val + '</text>');
+        }
+
+        if (keys.length <= 10 || i % Math.ceil(keys.length / 8) === 0) {
+            svgParts.push(
+                '<line x1="' + centerX + '" y1="' + (padTop + chartH) + '" x2="' + centerX + '" y2="' + (padTop + chartH + 4) + '" stroke="#cbd5e1" stroke-width="1.5"/>' +
+                '<text x="' + centerX + '" y="' + (padTop + chartH + 18) + '" text-anchor="middle" fill="#64748b" font-size="10" font-weight="600">' + formatDateShort(key) + '</text>'
+            );
+        }
+    });
+
+    container.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet" style="width:100%; height:auto;">' + svgParts.join('') + '</svg>';
 }
 
+/**
+ * Render Hourly Chart with exact alignment between each bar and its hour label (00:00 - 23:00)
+ */
 function renderHourlyChart() {
     var container = document.getElementById('chartHourly');
+    if (!container) return;
+
     var hourCounts = new Array(24).fill(0);
 
     filteredReports.forEach(function(r) {
@@ -281,23 +315,74 @@ function renderHourlyChart() {
 
     var max = Math.max.apply(null, hourCounts) || 1;
     var peakHour = hourCounts.indexOf(max);
-    document.getElementById('peakHourLabel').textContent = max > 0
-        ? 'Pico: ' + String(peakHour).padStart(2, '0') + ':00 (' + max + ')'
-        : '—';
+    var peakElement = document.getElementById('peakHourLabel');
+    if (peakElement) {
+        peakElement.textContent = max > 0
+            ? 'Pico: ' + String(peakHour).padStart(2, '0') + ':00 (' + max + ' reportes)'
+            : '—';
+    }
 
-    var w = 600, h = 200, pad = 20;
-    var barW = (w - pad * 2) / 24 - 2;
+    var w = 620, h = 260;
+    var padLeft = 32, padRight = 16, padTop = 30, padBottom = 45;
+    var chartW = w - padLeft - padRight;
+    var chartH = h - padTop - padBottom;
+    var slotW = chartW / 24;
+    var barW = slotW - 3; // 3px gap between bars
 
-    var bars = hourCounts.map(function(val, i) {
-        var barH = (val / max) * (h - pad * 2);
-        var x = pad + i * ((w - pad * 2) / 24);
-        var y = h - pad - barH;
-        var color = i === peakHour && val > 0 ? '#dc2626' : '#2563eb';
-        return '<rect x="' + x + '" y="' + y + '" width="' + barW + '" height="' + barH + '" rx="2" fill="' + color + '" opacity="0.9">' +
-            '<title>' + String(i).padStart(2, '0') + ':00 - ' + val + '</title></rect>';
-    }).join('');
+    var svgParts = [];
 
-    container.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' + bars + '</svg>';
+    // Background horizontal grid lines
+    [0, 0.5, 1].forEach(function(ratio) {
+        var yVal = padTop + chartH * (1 - ratio);
+        var labelVal = Math.round(max * ratio);
+        svgParts.push(
+            '<line x1="' + padLeft + '" y1="' + yVal + '" x2="' + (w - padRight) + '" y2="' + yVal + '" stroke="#e2e8f0" stroke-dasharray="3,3" stroke-width="1"/>' +
+            '<text x="' + (padLeft - 6) + '" y="' + (yVal + 4) + '" text-anchor="end" fill="#94a3b8" font-size="10" font-weight="600">' + labelVal + '</text>'
+        );
+    });
+
+    // Baseline X Axis
+    svgParts.push('<line x1="' + padLeft + '" y1="' + (padTop + chartH) + '" x2="' + (w - padRight) + '" y2="' + (padTop + chartH) + '" stroke="#94a3b8" stroke-width="1.5"/>');
+
+    // 24 Hour Bars & Aligned Hour Labels
+    hourCounts.forEach(function(val, i) {
+        var barH = max > 0 ? (val / max) * chartH : 0;
+        var centerX = padLeft + i * slotW + slotW / 2;
+        var barX = centerX - barW / 2;
+        var y = padTop + chartH - barH;
+        var isPeak = (i === peakHour && val > 0);
+        var fillColor = isPeak ? '#dc2626' : '#2563eb';
+        var hourLabelText = String(i).padStart(2, '0') + ':00';
+
+        // Bar Element with interactive hover
+        svgParts.push(
+            '<rect class="hourly-bar' + (isPeak ? ' peak' : '') + '" x="' + barX + '" y="' + y + '" width="' + barW + '" height="' + Math.max(barH, 2) + '" rx="3" fill="' + fillColor + '" opacity="' + (val > 0 ? '0.9' : '0.25') + '">' +
+            '<title>Hora: ' + hourLabelText + ' - ' + String(i).padStart(2, '0') + ':59\nReportes: ' + val + '</title>' +
+            '</rect>'
+        );
+
+        // Value text above bar if count > 0
+        if (val > 0) {
+            svgParts.push(
+                '<text x="' + centerX + '" y="' + Math.max(y - 4, 14) + '" text-anchor="middle" fill="' + (isPeak ? '#dc2626' : '#1e40af') + '" font-size="10" font-weight="700">' + val + '</text>'
+            );
+        }
+
+        // Tick mark pointing directly under the center of the bar
+        svgParts.push(
+            '<line x1="' + centerX + '" y1="' + (padTop + chartH) + '" x2="' + centerX + '" y2="' + (padTop + chartH + 5) + '" stroke="#94a3b8" stroke-width="1.2"/>'
+        );
+
+        // HOUR LABEL DIRECTLY ALIGNED UNDER ITS CORRESPONDING BAR
+        // Show label for every 2 hours + hour 23 so the x-axis is cleanly legible and 100% unambiguous
+        if (i % 2 === 0 || i === 23) {
+            svgParts.push(
+                '<text x="' + centerX + '" y="' + (padTop + chartH + 20) + '" text-anchor="middle" fill="#475569" font-size="10.5" font-weight="700">' + hourLabelText + '</text>'
+            );
+        }
+    });
+
+    container.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet" style="width:100%; height:auto;">' + svgParts.join('') + '</svg>';
 }
 
 function renderDonutChart() {
@@ -307,6 +392,7 @@ function renderDonutChart() {
     var total = filteredReports.length;
     var donut = document.getElementById('chartDonutType');
     var legend = document.getElementById('legendType');
+    if (!donut || !legend) return;
 
     if (!total) {
         donut.style.background = '#eef2f7';
@@ -343,6 +429,7 @@ function renderStatusFunnel() {
 
     var total = filteredReports.length;
     var container = document.getElementById('chartStatus');
+    if (!container) return;
 
     if (!total) {
         container.innerHTML = '<div class="empty-cell">Sin datos</div>';
@@ -418,6 +505,8 @@ function renderUserChart() {
 
 function renderHotspots() {
     var list = document.getElementById('hotspotList');
+    if (!list) return;
+
     var geoReports = filteredReports.filter(hasCoords);
 
     if (!geoReports.length) {
@@ -453,9 +542,10 @@ function renderExecMetrics() {
     var geo = filteredReports.filter(hasCoords).length;
     var closed = filteredReports.filter(function(r) { return r.estado_atencion === 'cerrada'; }).length;
     var container = document.getElementById('execMetrics');
+    if (!container) return;
 
     container.innerHTML =
-        '<div class="exec-metric"><span>Tasa georreferenciada</span><strong>' + pct(geo, total) + '%</strong></div>' +
+        '<div class="exec-metric"><span>Georreferenciados</span><strong>' + pct(geo, total) + '%</strong></div>' +
         '<div class="exec-metric"><span>Tasa de cierre</span><strong>' + pct(closed, total) + '%</strong></div>' +
         '<div class="exec-metric"><span>Promedio diario</span><strong>' + calcDailyAvg() + '</strong></div>';
 }
@@ -473,6 +563,8 @@ function calcDailyAvg() {
 
 function renderTable() {
     var tbody = document.getElementById('reportTableBody');
+    if (!tbody) return;
+
     if (!filteredReports.length) {
         tbody.innerHTML = '<tr><td colspan="4" class="empty-cell">Sin reportes</td></tr>';
         return;
@@ -489,8 +581,13 @@ function renderTable() {
 }
 
 function renderMap() {
+    var mapSummaryEl = document.getElementById('mapSummary');
     var geoReports = filteredReports.filter(hasCoords);
-    document.getElementById('mapSummary').textContent = geoReports.length + ' puntos en vista complementaria';
+    if (mapSummaryEl) {
+        mapSummaryEl.textContent = geoReports.length + ' reportes georreferenciados en tiempo real';
+    }
+
+    if (!heatLayer) return;
 
     if (!geoReports.length) {
         heatLayer.setLatLngs([]);
@@ -500,11 +597,17 @@ function renderMap() {
     heatLayer.setLatLngs(geoReports.map(function(r) {
         return [Number(r.latitud), Number(r.longitud), 1];
     }));
+
+    if (map) {
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 150);
+    }
 }
 
 function fitMapBounds() {
     var geoReports = filteredReports.filter(hasCoords);
-    if (!geoReports.length) return;
+    if (!geoReports.length || !map) return;
     var bounds = L.latLngBounds(geoReports.map(function(r) {
         return [Number(r.latitud), Number(r.longitud)];
     }));
@@ -521,15 +624,21 @@ function resetFilters() {
     document.getElementById('dateTo').value = '';
     document.getElementById('ageMin').value = '';
     document.getElementById('ageMax').value = '';
-    document.getElementById('timeSlider').noUiSlider.set([0, 1440]);
+    var slider = document.getElementById('timeSlider');
+    if (slider && slider.noUiSlider) {
+        slider.noUiSlider.set([0, 1440]);
+    }
     applyFilters();
 }
 
 function setConnectionState(state, message) {
     var dot = document.getElementById('connectionDot');
-    dot.classList.remove('online', 'offline');
-    dot.classList.add(state);
-    document.getElementById('connectionText').textContent = message;
+    if (dot) {
+        dot.classList.remove('online', 'offline');
+        dot.classList.add(state);
+    }
+    var textEl = document.getElementById('connectionText');
+    if (textEl) textEl.textContent = message;
 }
 
 function connectAlertas() {
@@ -545,7 +654,10 @@ function connectAlertas() {
         try {
             allReports = JSON.parse(event.data);
             if (!Array.isArray(allReports)) allReports = [];
-            document.getElementById('lastUpdate').textContent = 'Actualizado ' + new Date().toLocaleTimeString('es-EC');
+            var lastUpEl = document.getElementById('lastUpdate');
+            if (lastUpEl) {
+                lastUpEl.textContent = 'Actualizado ' + new Date().toLocaleTimeString('es-EC');
+            }
             applyFilters();
         } catch (error) {
             console.error('Error procesando alertas:', error);
@@ -573,12 +685,18 @@ function loadUsuarios() {
 
 ['searchInput', 'typeSelect', 'statusSelect', 'genderSelect', 'userSelect',
  'dateFrom', 'dateTo', 'ageMin', 'ageMax'].forEach(function(id) {
-    document.getElementById(id).addEventListener('input', applyFilters);
-    document.getElementById(id).addEventListener('change', applyFilters);
+    var el = document.getElementById(id);
+    if (el) {
+        el.addEventListener('input', applyFilters);
+        el.addEventListener('change', applyFilters);
+    }
 });
 
-document.getElementById('btnResetFilters').addEventListener('click', resetFilters);
-document.getElementById('btnFitBounds').addEventListener('click', fitMapBounds);
+var btnReset = document.getElementById('btnResetFilters');
+if (btnReset) btnReset.addEventListener('click', resetFilters);
+
+var btnFit = document.getElementById('btnFitBounds');
+if (btnFit) btnFit.addEventListener('click', fitMapBounds);
 
 initMap();
 initTimeSlider();

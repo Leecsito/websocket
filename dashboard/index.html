@@ -37,11 +37,12 @@
     </script>
 
     <main class="dash-shell">
+        <!-- Topbar -->
         <section class="dash-topbar">
             <div>
-                <p class="eyebrow">Inteligencia operativa</p>
-                <h1>Dashboard analítico</h1>
-                <p class="topbar-copy">Gráficos y métricas para identificar patrones, priorizar recursos y tomar decisiones sobre emergencias en Riobamba.</p>
+                <p class="eyebrow"><i class="fa-solid fa-shield-halved"></i> Inteligencia Operativa</p>
+                <h1>Dashboard Analítico</h1>
+                <p class="topbar-copy">Gráficos y métricas en tiempo real para identificar patrones, priorizar recursos y optimizar la respuesta a emergencias.</p>
             </div>
             <div class="topbar-actions">
                 <div class="connection-card">
@@ -54,6 +55,7 @@
             </div>
         </section>
 
+        <!-- KPI Grid -->
         <section class="kpi-grid" aria-label="Indicadores clave">
             <article class="kpi-card">
                 <span class="kpi-icon total"><i class="fa-solid fa-chart-line"></i></span>
@@ -99,9 +101,29 @@
             </article>
         </section>
 
+        <!-- MAPA DE CALOR ARRIBA -->
+        <section class="heatmap-hero-section">
+            <article class="heatmap-hero-panel">
+                <div class="chart-head">
+                    <div>
+                        <span class="panel-badge"><i class="fa-solid fa-fire-flame-curved"></i> Cobertura Geográfica Principal</span>
+                        <h3>Mapa de Calor de Incidencias</h3>
+                        <p id="mapSummary">Concentración térmica de reportes georreferenciados en Riobamba</p>
+                    </div>
+                    <div class="map-actions">
+                        <button type="button" id="btnFitBounds" class="ghost-button" title="Centrar mapa">
+                            <i class="fa-solid fa-expand"></i> Centrar mapa
+                        </button>
+                    </div>
+                </div>
+                <div id="analysisMap"></div>
+            </article>
+        </section>
+
+        <!-- Filtros de Análisis -->
         <section class="filters-bar" aria-label="Filtros de análisis">
             <div class="filters-bar-head">
-                <h2>Filtros de análisis</h2>
+                <h2><i class="fa-solid fa-filter"></i> Filtros de análisis</h2>
                 <div class="filters-bar-actions">
                     <span class="filter-count" id="filterCount">0 reportes</span>
                     <button type="button" id="btnResetFilters" class="ghost-button">
@@ -149,110 +171,124 @@
             </div>
         </section>
 
-        <section class="charts-grid" aria-label="Gráficos analíticos">
-            <article class="chart-panel">
-                <div class="chart-head">
-                    <div>
-                        <h3>Tendencia de reportes</h3>
-                        <p>Volumen diario para detectar picos y tendencias</p>
+        <!-- DISTRIBUCIÓN DINÁMICA DE TARJETAS EN 3 COLUMNAS (MENSURA ASIMÉTRICA) -->
+        <section class="masonry-container" aria-label="Tablero dinámico de gráficos">
+            <!-- COLUMNA 1: Tarjeta corta superior + Tarjeta alta inferior -->
+            <div class="masonry-col col-1">
+                <!-- Tarjeta corta (Horizontal) -->
+                <article class="chart-panel card-short">
+                    <div class="chart-head">
+                        <div>
+                            <h3>Tendencia de reportes</h3>
+                            <p>Volumen diario para detectar picos y fluctuaciones</p>
+                        </div>
                     </div>
-                </div>
-                <div class="svg-chart" id="chartTrend"></div>
-            </article>
+                    <div class="svg-chart" id="chartTrend"></div>
+                </article>
 
-            <article class="chart-panel">
-                <div class="chart-head">
-                    <div>
-                        <h3>Distribución por hora del día</h3>
-                        <p>Identifica franjas críticas para reforzar patrullaje o personal médico</p>
+                <!-- Tarjeta alta (Vertical) -->
+                <article class="chart-panel card-tall decision-panel">
+                    <div class="chart-head">
+                        <div>
+                            <h3>Resumen ejecutivo</h3>
+                            <p>Métricas clave de atención y tabla de casos recientes</p>
+                        </div>
                     </div>
-                    <strong class="chart-highlight" id="peakHourLabel">—</strong>
-                </div>
-                <div class="svg-chart" id="chartHourly"></div>
-            </article>
-
-            <article class="chart-panel">
-                <div class="chart-head">
-                    <h3>Composición por tipo</h3>
-                </div>
-                <div class="donut-wrap">
-                    <div class="donut" id="chartDonutType"></div>
-                    <ul class="legend" id="legendType"></ul>
-                </div>
-            </article>
-
-            <article class="chart-panel">
-                <div class="chart-head">
-                    <h3>Estado de atención</h3>
-                </div>
-                <div class="funnel-chart" id="chartStatus"></div>
-            </article>
-
-            <article class="chart-panel">
-                <div class="chart-head">
-                    <h3>Perfil por género</h3>
-                </div>
-                <div class="bar-chart" id="chartGender"></div>
-            </article>
-
-            <article class="chart-panel">
-                <div class="chart-head">
-                    <h3>Grupos de edad</h3>
-                </div>
-                <div class="bar-chart" id="chartAge"></div>
-            </article>
-
-            <article class="chart-panel">
-                <div class="chart-head">
-                    <h3>Usuarios con más reportes</h3>
-                </div>
-                <div class="bar-chart" id="chartUsers"></div>
-            </article>
-
-            <article class="chart-panel">
-                <div class="chart-head">
-                    <h3>Zonas con mayor concentración</h3>
-                    <p class="chart-sub">Referencia geográfica para decisiones de despliegue</p>
-                </div>
-                <ul class="rank-list" id="hotspotList"></ul>
-            </article>
-        </section>
-
-        <section class="bottom-row">
-            <article class="mini-map-panel">
-                <div class="chart-head">
-                    <div>
-                        <h3>Vista geográfica complementaria</h3>
-                        <p id="mapSummary">Mapa de apoyo — no es el foco principal del análisis</p>
+                    <div class="exec-metrics" id="execMetrics"></div>
+                    <div class="table-wrap compact-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Ciudadano</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody">
+                                <tr><td colspan="4" class="empty-cell">Cargando...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <button type="button" id="btnFitBounds" class="ghost-button" title="Ajustar vista">
-                        <i class="fa-solid fa-expand"></i>
-                    </button>
-                </div>
-                <div id="analysisMap"></div>
-            </article>
+                </article>
+            </div>
 
-            <article class="decision-panel">
-                <div class="chart-head">
-                    <h3>Resumen ejecutivo</h3>
-                </div>
-                <div class="exec-metrics" id="execMetrics"></div>
-                <div class="table-wrap compact-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Tipo</th>
-                                <th>Ciudadano</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reportTableBody">
-                            <tr><td colspan="4" class="empty-cell">Cargando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </article>
+            <!-- COLUMNA 2: Tarjeta cuadrada superior + Tarjeta mediana inferior -->
+            <div class="masonry-col col-2">
+                <!-- Tarjeta cuadrada -->
+                <article class="chart-panel card-square">
+                    <div class="chart-head">
+                        <div>
+                            <h3>Distribución por hora del día</h3>
+                            <p>Identifica franjas horarias críticas para patrullaje</p>
+                        </div>
+                        <strong class="chart-highlight" id="peakHourLabel">—</strong>
+                    </div>
+                    <div class="svg-chart" id="chartHourly"></div>
+                </article>
+
+                <!-- Tarjeta mediana -->
+                <article class="chart-panel card-medium">
+                    <div class="chart-head">
+                        <div>
+                            <h3>Zonas con mayor concentración</h3>
+                            <p class="chart-sub">Puntos calientes prioritarios para patrullas</p>
+                        </div>
+                    </div>
+                    <ul class="rank-list" id="hotspotList"></ul>
+
+                    <div class="chart-head mt-4">
+                        <div>
+                            <h3>Usuarios con más reportes</h3>
+                            <p class="chart-sub">Principales emisores de alertas</p>
+                        </div>
+                    </div>
+                    <div class="bar-chart" id="chartUsers"></div>
+                </article>
+            </div>
+
+            <!-- COLUMNA 3: Tarjeta alta superior + Tarjeta corta inferior -->
+            <div class="masonry-col col-3">
+                <!-- Tarjeta alta -->
+                <article class="chart-panel card-tall">
+                    <div class="chart-head">
+                        <div>
+                            <h3>Composición por tipo</h3>
+                            <p>Proporción por categoría de incidencia</p>
+                        </div>
+                    </div>
+                    <div class="donut-wrap">
+                        <div class="donut" id="chartDonutType"></div>
+                        <ul class="legend" id="legendType"></ul>
+                    </div>
+
+                    <div class="chart-head mt-4">
+                        <div>
+                            <h3>Estado de atención</h3>
+                            <p class="chart-sub">Embudo de resolución de casos</p>
+                        </div>
+                    </div>
+                    <div class="funnel-chart" id="chartStatus"></div>
+                </article>
+
+                <!-- Tarjeta corta -->
+                <article class="chart-panel card-short">
+                    <div class="chart-head">
+                        <div>
+                            <h3>Demografía del usuario</h3>
+                            <p>Desglose por género y edad</p>
+                        </div>
+                    </div>
+                    <div class="sub-chart-block">
+                        <span class="sub-chart-title"><i class="fa-solid fa-venus-mars"></i> Género</span>
+                        <div class="bar-chart" id="chartGender"></div>
+                    </div>
+                    <div class="sub-chart-block mt-3">
+                        <span class="sub-chart-title"><i class="fa-solid fa-cake-candles"></i> Grupos de edad</span>
+                        <div class="bar-chart" id="chartAge"></div>
+                    </div>
+                </article>
+            </div>
         </section>
     </main>
 
