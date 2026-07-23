@@ -141,7 +141,7 @@ function conectarWebSocket() {
     };
 }
 
-function getIconForType(tipo) {
+function getIconDataForType(tipo) {
     let iconClass = 'fa-solid fa-bell';
     let bgClass = 'icon-default';
     let t = tipo.toLowerCase();
@@ -159,6 +159,12 @@ function getIconForType(tipo) {
         iconClass = 'fa-solid fa-fire';
         bgClass = 'icon-robo';
     }
+    
+    return { iconClass, bgClass };
+}
+
+function getIconForType(tipo) {
+    const { iconClass, bgClass } = getIconDataForType(tipo);
 
     return L.divIcon({
         html: `<div class="custom-map-icon ${bgClass}" style="width:100%; height:100%;"><i class="${iconClass}"></i></div>`,
@@ -193,13 +199,22 @@ function renderEvents(events) {
         marker.bindPopup(popupContent);
         markersLayer.addLayer(marker);
 
+        let genderIcon = '<i class="fa-solid fa-user" style="color: #64748b; font-size: 1.2rem;"></i>';
+        if (ev.genero === 'Masculino') {
+            genderIcon = '<i class="fa-solid fa-person" style="color: #3b82f6; font-size: 1.2rem;"></i>';
+        } else if (ev.genero === 'Femenino') {
+            genderIcon = '<i class="fa-solid fa-person-dress" style="color: #ec4899; font-size: 1.2rem;"></i>';
+        }
+
+        const { iconClass, bgClass } = getIconDataForType(ev.tipo);
+        const alertHtml = `<div style="display:flex; align-items:center; gap:8px;"><div class="custom-map-icon ${bgClass}" style="width:24px; height:24px; position:static;"><i class="${iconClass}" style="font-size: 10px;"></i></div><span style="font-size:0.8rem; font-weight:600;">${ev.tipo}</span></div>`;
+
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${ev.id}</td>
-            <td>${ev.fecha_hora ? ev.fecha_hora.substring(0,16) : ''}</td>
-            <td>${ev.nombres}</td>
-            <td>${ev.genero} / ${ev.edad}</td>
-            <td>${ev.tipo}</td>
+            <td style="text-align: center;">${genderIcon}</td>
+            <td style="font-weight: 500;">${ev.nombres}</td>
+            <td>${ev.edad} años</td>
+            <td>${alertHtml}</td>
             <td><button class="btn-action" onclick="centrarMapa(${ev.lat}, ${ev.lng})">Ubicar</button></td>
         `;
         tableBody.appendChild(row);
@@ -261,6 +276,7 @@ sliderTime.noUiSlider.on('update', function (values) {
 
 function aplicarFiltros() {
     filterValues.gender = filterGenderInput.value;
+    const filterType = document.getElementById('filterType').value;
     const dateMinStr = document.getElementById('filterDateMin').value;
     const dateMaxStr = document.getElementById('filterDateMax').value;
     const ageMin = parseInt(document.getElementById('filterAgeMin').value);
@@ -273,6 +289,16 @@ function aplicarFiltros() {
     const filteredEvents = allEvents.filter(ev => {
         let match = true;
         if (filterValues.gender !== 'Todos' && ev.genero !== filterValues.gender) match = false;
+        
+        if (filterType !== 'Todos') {
+            const evTipo = ev.tipo.toLowerCase();
+            const ft = filterType.toLowerCase();
+            // 'Medica' might have accent
+            if (ft === 'medica' && !evTipo.includes('medica') && !evTipo.includes('médica') && !evTipo.includes('salud')) match = false;
+            else if (ft === 'robo' && !evTipo.includes('robo') && !evTipo.includes('asalto') && !evTipo.includes('sospechoso')) match = false;
+            else if (ft === 'accidente' && !evTipo.includes('accidente') && !evTipo.includes('choque')) match = false;
+            else if (ft === 'incendio' && !evTipo.includes('incendio')) match = false;
+        }
         
         // Age filter
         if (!isNaN(ageMin) && ev.edad < ageMin) match = false;
@@ -299,7 +325,7 @@ function aplicarFiltros() {
 }
 
 // Attach change listeners to standard inputs
-['filterDateMin', 'filterDateMax', 'filterAgeMin', 'filterAgeMax'].forEach(id => {
+['filterType', 'filterDateMin', 'filterDateMax', 'filterAgeMin', 'filterAgeMax'].forEach(id => {
     document.getElementById(id).addEventListener('change', aplicarFiltros);
     document.getElementById(id).addEventListener('input', aplicarFiltros);
 });
@@ -312,6 +338,7 @@ document.getElementById('btnClearFilters').addEventListener('click', () => {
     filterGenderInput.value = 'Todos';
 
     // Reset standard inputs
+    document.getElementById('filterType').value = 'Todos';
     document.getElementById('filterDateMin').value = '';
     document.getElementById('filterDateMax').value = '';
     document.getElementById('filterAgeMin').value = '';

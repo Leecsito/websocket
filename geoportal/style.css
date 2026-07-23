@@ -67,6 +67,7 @@ body {
     padding: 20px;
     z-index: 900;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .filter-section h2 {

@@ -75,6 +75,17 @@
                     </div>
                 </div>
 
+                <div class="filter-group">
+                    <label>Tipo de Alerta</label>
+                    <select id="filterType">
+                        <option value="Todos">Todos</option>
+                        <option value="Robo">Robo / Asalto / Sospechoso</option>
+                        <option value="Accidente">Accidente / Choque</option>
+                        <option value="Medica">Emergencia Médica</option>
+                        <option value="Incendio">Incendio</option>
+                    </select>
+                </div>
+
                 <button class="btn-secondary" id="btnClearFilters">Limpiar Todo</button>
             </div>
 
@@ -102,11 +113,10 @@
                 <table id="logTable">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>FECHA Y HORA</th>
-                            <th>CIUDADANO (NOMBRES)</th>
-                            <th>GÉNERO / EDAD</th>
-                            <th>TIPO</th>
+                            <th style="width: 50px; text-align: center;">GÉNERO</th>
+                            <th>CIUDADANO</th>
+                            <th>EDAD</th>
+                            <th>ALERTA</th>
                             <th>ACCIÓN</th>
                         </tr>
                     </thead>
