@@ -25,28 +25,24 @@ def get_db_connection():
     return psycopg2.connect(DB_URL)
 
 def consultar_alertas():
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("""
-            SELECT id, tipo_evento, fecha, hora, descripcion, cedula, nombres, apellidos, 
-                   celular, genero, fecha_nacimiento, edad, contacto_emergencia,
-                   ST_AsGeoJSON(geom) as geom 
-            FROM alertas ORDER BY id DESC
-        """)
-        rows = cur.fetchall()
-        cur.close()
-        conn.close()
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
+        SELECT id, tipo_evento, fecha, hora, descripcion, cedula, nombres, apellidos, 
+               celular, genero, fecha_nacimiento, edad, contacto_emergencia,
+               ST_AsGeoJSON(geom) as geom 
+        FROM alertas ORDER BY id DESC
+    """)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
 
-        for row in rows:
-            if row['fecha']: row['fecha'] = str(row['fecha'])
-            if row['hora']: row['hora'] = str(row['hora'])
-            if row['fecha_nacimiento']: row['fecha_nacimiento'] = str(row['fecha_nacimiento'])
+    for row in rows:
+        if row['fecha']: row['fecha'] = str(row['fecha'])
+        if row['hora']: row['hora'] = str(row['hora'])
+        if row['fecha_nacimiento']: row['fecha_nacimiento'] = str(row['fecha_nacimiento'])
 
-        return [dict(row) for row in rows]
-    except Exception as e:
-        print(f"Error consultando alertas: {e}")
-        return []
+    return [dict(row) for row in rows]
 
 class AlertaRequest(BaseModel):
     tipo_evento: str
@@ -134,11 +130,19 @@ async def editar_alerta(alerta_id: int, req: AlertaRequest):
 @app.websocket("/ws/alertas")
 async def websocket_alertas(websocket: WebSocket):
     await websocket.accept()
+    fail_delay = 0  # segundos de espera acumulados por fallos
     try:
         while True:
-            datos = await run_in_threadpool(consultar_alertas)
-            await websocket.send_json(datos)
-            await asyncio.sleep(1)
+            try:
+                datos = await run_in_threadpool(consultar_alertas)
+                fail_delay = 0  # resetear backoff al tener éxito
+                await websocket.send_json(datos)
+                await asyncio.sleep(3)
+            except Exception as e:
+                print(f"Error consultando alertas: {e}")
+                fail_delay = min(fail_delay + 10, 60)  # backoff: 10s, 20s, 30s... máx 60s
+                print(f"Reintentando en {fail_delay}s...")
+                await asyncio.sleep(fail_delay)
     except (WebSocketDisconnect, RuntimeError):
         pass
 
